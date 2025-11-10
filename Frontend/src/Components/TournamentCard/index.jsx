@@ -44,7 +44,7 @@ const TournamentCard = ({ data, registerText = "Register" }) => {
               className="h-full transition-all duration-700"
               style={{
                 width: `${filledPercentage}%`,
-                background: "linear-gradient(90deg, #0EA5E9, #06B6D4, yellow)",
+                background: "linear-gradient(#06B6D4)",
               }}
             ></div>
           </div>

@@ -11,8 +11,8 @@ const Header = () => {
     { name: "Tournament", path: "/tournament" },
     { name: "Scrim", path: "/scrim" },
     { name: "TDM", path: "/tdm" },
-    { name: "Free", path: "/free" },
     { name: "Live ●", path: "/live" },
+    { name: "About Us", path: "/about-us" },
     { name: "Login", path: "/login" },
     { name: "SignUp", path: "/signup" },
   ];

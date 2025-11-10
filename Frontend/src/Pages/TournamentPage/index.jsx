@@ -415,9 +415,9 @@ const TournamentPage = () => {
             </div>
 
             {/* Progress bar */}
-            <div className="relative h-2 bg-[#1b2033] rounded-full overflow-hidden mb-2">
+            <div className="relative h-1 bg-[#1b2033] rounded-full overflow-hidden mb-2">
               <div
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-yellow-400 to-cyan-400"
+                className="absolute top-0 left-0 h-full bg-[#06B6D4]"
                 style={{ width: `${t.progress}%` }}
               ></div>
             </div>
