@@ -1,7 +1,7 @@
 import React from "react";
 import "./App.css";
 import Header from "./Components/Header";
-import { BrowserRouter,Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter,Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./Pages/Home";
 import TournamentPage from "./Pages/TournamentPage";
 import TournamentDetailPage from "./Components/TournamentDetailPage";
@@ -9,6 +9,8 @@ import ScrimPage from "./Pages/ScrimPage";
 import TdmKnockoutSection from "./Pages/TdmKnockoutSection";
 import TdmDetailsPage from "./Pages/TdmDetailPage";
 import LivePage from "./Pages/LivePage";
+import LoginPage from "./Pages/LoginPage";
+import SignupPage from "./Pages/Home/SignupPage";
 
 function App() {
   return (
@@ -22,6 +24,9 @@ function App() {
         <Route path="/tdm" exact={true} element={<TdmKnockoutSection />} />
         <Route path="/tdm-details/:id" element={<TdmDetailsPage />} />
         <Route path="/live" exact={true} element={<LivePage />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
       </Routes>
     </BrowserRouter>
   );
