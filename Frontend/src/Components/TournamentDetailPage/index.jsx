@@ -9,6 +9,12 @@ import {
   Divider,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
+import OverviewTab from "./overviewTab";
+import ScheduleTab from "./scheduleTab";
+import LiveTab from "./liveTab";
+import LeaderBoardTab from "./leaderboardTab";
+import MVPTable from "./mvpTab";
+import TeamsTab from "./teamsTab";
 
 const TournamentDetailPage = () => {
   const { id } = useParams();
@@ -16,7 +22,7 @@ const TournamentDetailPage = () => {
 
   // 👇 Use same tournament list as in TournamentPage
   const tournaments = [
-     {
+    {
       id: 1,
       title: "BGMI Battle Rush 1.0",
       date: "1-Jan to 15-Jan",
@@ -439,9 +445,7 @@ const TournamentDetailPage = () => {
   ];
 
   // 👇 Find selected tournament
-  const tournament = tournaments.find(
-    (t) => t.id === parseInt(id)
-  );
+  const tournament = tournaments.find((t) => t.id === parseInt(id));
 
   if (!tournament) {
     return (
@@ -643,8 +647,7 @@ const TournamentDetailPage = () => {
             key={item.key}
             onClick={() => handleSectionChange(item.key)}
             sx={{
-              color:
-                section === item.key ? "#06B6D4" : "rgba(255,255,255,0.7)",
+              color: section === item.key ? "#06B6D4" : "rgba(255,255,255,0.7)",
               textTransform: "none",
               fontWeight: section === item.key ? 700 : 500,
               fontSize: "16px",
@@ -668,7 +671,7 @@ const TournamentDetailPage = () => {
       <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
 
       {/* CONTENT */}
-      <Box sx={{ p: 4, maxWidth: "1000px", mx: "auto" }}>
+      <Box sx={{ p: 4, maxWidth: "1200px", mx: "auto" }}>
         <Card
           sx={{
             backgroundColor: "rgba(255,255,255,0.03)",
@@ -679,30 +682,22 @@ const TournamentDetailPage = () => {
             p: 3,
           }}
         >
-          <CardContent>
-            {section === "overview" && (
-              <Typography>
-                🏆 {tournament.title} is a thrilling {tournament.mode}-mode
-                event with a prizepool of {tournament.prizepool}. Entry fee:{" "}
-                {tournament.entry}.
-              </Typography>
-            )}
-            {section === "schedule" && (
-              <Typography>🕒 Schedule details here...</Typography>
-            )}
-            {section === "live" && (
-              <Typography>📺 Live stream info goes here...</Typography>
-            )}
-            {section === "Leaderboard" && (
-              <Typography>🔐 Room Leaderboard here...</Typography>
-            )}
-            {section === "MVP Leaderboard" && (
-              <Typography>🥇 MVP Leaderboard leaderboard here...</Typography>
-            )}
-            {section === "teams" && (
-              <Typography>👥 Teams and player list here...</Typography>
-            )}
-          </CardContent>
+          {/* OVERVIEW */}
+          {section === "overview" && <OverviewTab tournament={tournament} />}
+          {/* SCHEDULE */}
+          {section === "schedule" && <ScheduleTab tournament={tournament} />}
+
+          {/* LIVE */}
+          {section === "live" && <LiveTab tournament={tournament} />}
+
+          {/* LEADERBOARD */}
+          {section === "Leaderboard" && <LeaderBoardTab tournament={tournament} />}
+
+          {/* MVP LEADERBOARD */}
+          {section === "MVP Leaderboard" && <MVPTable tournament={tournament} />}
+
+          {/* TEAMS */}
+          {section === "teams" && <TeamsTab tournament={tournament} />}
         </Card>
       </Box>
     </Box>

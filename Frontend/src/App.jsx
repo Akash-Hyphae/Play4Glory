@@ -11,8 +11,18 @@ import TdmDetailsPage from "./Pages/TdmDetailPage";
 import LivePage from "./Pages/LivePage";
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/Home/SignupPage";
+import { useEffect } from "react";
+import ProfilePage from "./Pages/Profile";
 
 function App() {
+  useEffect(() => {
+    // simulate logged-in user globally
+    if (!localStorage.getItem("playerToken")) {
+      localStorage.setItem("playerToken", "demo-token");
+      localStorage.setItem("playerName", "Akash Singh");
+      localStorage.setItem("walletBalance", 1250);
+    }
+  }, []);
   return (
     <BrowserRouter>
       <Header />
@@ -27,6 +37,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   );
