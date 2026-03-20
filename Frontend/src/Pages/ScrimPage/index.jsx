@@ -1,10 +1,11 @@
 // src/components/ScrimsSection/ScrimsSection.jsx
-import React from "react";
+import { React, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
+import RegisterDialog from "../../Components/RegisterDialog";
 
 // Each match has its own filled slots out of 16
 const scrimSlots = [
@@ -55,6 +56,8 @@ const scrimSlots = [
 ];
 
 const ScrimsSection = () => {
+  const [openDialog, setOpenDialog] = useState(false);
+
   return (
     <section className="py-8 px-6 space-y-10 bg-[#0B0E16] min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-center mb-10">
@@ -62,7 +65,6 @@ const ScrimsSection = () => {
           Scrims
         </h1>
       </div>
-
       {scrimSlots.map((slot, i) => (
         <div
           key={i}
@@ -91,8 +93,8 @@ const ScrimsSection = () => {
                 progress >= 100
                   ? "#22c55e" // green
                   : progress >= 10
-                  ? "#06B6D4" // cyan
-                  : "#ef4444"; // red
+                    ? "#06B6D4" // cyan
+                    : "#ef4444"; // red
 
               return (
                 <SwiperSlide
@@ -129,7 +131,10 @@ const ScrimsSection = () => {
                       </span>
                     </div>
 
-                    <button className="mt-3 border border-cyan-500 text-cyan-400 rounded-md px-4 py-2 hover:bg-cyan-500 hover:text-black transition">
+                    <button
+                      onClick={() => setOpenDialog(true)}
+                      className="mt-3 border border-cyan-500 text-cyan-400 rounded-md px-4 py-2 hover:bg-cyan-500 hover:text-black transition"
+                    >
                       Register Scrim
                     </button>
                   </div>
@@ -139,6 +144,12 @@ const ScrimsSection = () => {
           </Swiper>
         </div>
       ))}
+      <RegisterDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        tournamentTitle={"Scrim Match"}
+      />
+      ;
     </section>
   );
 };

@@ -2,11 +2,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaMedal, FaStar } from "react-icons/fa";
+import RegisterDialog from "../../Components/RegisterDialog";
 
 const TournamentPage = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [openDialog, setOpenDialog] = useState(false);
 
   const tournaments = [
     {
@@ -354,6 +356,7 @@ const TournamentPage = () => {
   );
 
   return (
+    <>
     <div className="min-h-screen bg-[#0b0e16] text-white px-6 py-10 font-sans">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-10">
@@ -425,7 +428,7 @@ const TournamentPage = () => {
 
             {/* Buttons */}
             <div className="flex gap-4 mt-4">
-              <button className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition">
+              <button onClick={() => setOpenDialog(true)} className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition">
                 Register Tournament
               </button>
               <button
@@ -439,6 +442,12 @@ const TournamentPage = () => {
         ))}
       </div>
     </div>
+    <RegisterDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        tournamentTitle={tournaments.title}
+      />
+    </>
   );
 };
 

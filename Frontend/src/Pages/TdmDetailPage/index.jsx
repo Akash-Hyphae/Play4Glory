@@ -9,12 +9,18 @@ import {
   Divider,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
+import OverviewTab from "./overviewTab";
+import ScheduleTab from "./ScheduleTab";
+import LeaderboardTab from "./LeaderboardTab";
+import LiveTab from "./LiveTab";
+import RewardsTab from "./RewardsTab";
+import TeamTab from "./TeamTab";
 
 const TdmDetailPage = () => {
   const { id } = useParams();
   const [section, setSection] = useState("overview");
 
-  // Sample TDM knockout data
+  // ✅ Sample Data (FIXED: added image + status)
   const tdms = [
     {
       id: 1,
@@ -23,6 +29,9 @@ const TdmDetailPage = () => {
       prizepool: "₹5000",
       entry: "₹100",
       mode: "squad",
+      status: "Ongoing",
+      image:
+        "https://images.unsplash.com/photo-1542751371-adc38448a05e",
       rewards: {
         first: "₹2000",
         second: "₹1500",
@@ -30,7 +39,6 @@ const TdmDetailPage = () => {
         fourth: "₹500",
       },
       players: "50/64",
-      progress: 78,
     },
     {
       id: 2,
@@ -39,6 +47,9 @@ const TdmDetailPage = () => {
       prizepool: "₹4000",
       entry: "₹80",
       mode: "solo",
+      status: "Upcoming",
+      image:
+        "https://images.unsplash.com/photo-1511512578047-dfb367046420",
       rewards: {
         first: "₹1500",
         second: "₹1200",
@@ -46,7 +57,6 @@ const TdmDetailPage = () => {
         fourth: "₹500",
       },
       players: "58/60",
-      progress: 96,
     },
     {
       id: 3,
@@ -55,6 +65,9 @@ const TdmDetailPage = () => {
       prizepool: "₹6000",
       entry: "₹120",
       mode: "duo",
+      status: "Ongoing",
+      image:
+        "https://images.unsplash.com/photo-1500673922987-e212871fec22",
       rewards: {
         first: "₹2500",
         second: "₹2000",
@@ -62,7 +75,6 @@ const TdmDetailPage = () => {
         fourth: "₹500",
       },
       players: "48/50",
-      progress: 95,
     },
     {
       id: 4,
@@ -71,6 +83,9 @@ const TdmDetailPage = () => {
       prizepool: "₹10000",
       entry: "₹200",
       mode: "squad",
+      status: "Completed",
+      image:
+        "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8",
       rewards: {
         first: "₹4000",
         second: "₹3000",
@@ -78,12 +93,12 @@ const TdmDetailPage = () => {
         fourth: "₹1000",
       },
       players: "64/64",
-      progress: 100,
     },
   ];
 
   const tdm = tdms.find((t) => t.id === parseInt(id));
 
+  // ✅ NOT FOUND
   if (!tdm) {
     return (
       <Box
@@ -101,8 +116,6 @@ const TdmDetailPage = () => {
     );
   }
 
-  const handleSectionChange = (val) => setSection(val);
-
   return (
     <Box
       sx={{
@@ -111,7 +124,7 @@ const TdmDetailPage = () => {
         color: "#fff",
       }}
     >
-      {/* HEADER IMAGE */}
+      {/* HEADER */}
       <Box
         sx={{
           position: "relative",
@@ -132,23 +145,31 @@ const TdmDetailPage = () => {
               "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, #0B0E16 100%)",
           }}
         />
+
         <Box sx={{ position: "relative", zIndex: 2 }}>
           <Typography variant="h4" sx={{ fontWeight: "bold" }}>
             {tdm.title}
           </Typography>
+
           <Typography variant="body2" color="gray">
             {tdm.date}
           </Typography>
+
           <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
             <Chip
               label={tdm.status}
               size="small"
               sx={{
                 backgroundColor:
-                  tdm.status === "Ongoing" ? "#0EA5E9" : "#DC2626",
+                  tdm.status === "Ongoing"
+                    ? "#0EA5E9"
+                    : tdm.status === "Completed"
+                    ? "#22C55E"
+                    : "#DC2626",
                 color: "#fff",
               }}
             />
+
             <Chip
               label={tdm.mode}
               size="small"
@@ -157,6 +178,7 @@ const TdmDetailPage = () => {
                 color: "#fff",
               }}
             />
+
             <Chip
               label={`Prizepool ${tdm.prizepool}`}
               size="small"
@@ -175,9 +197,8 @@ const TdmDetailPage = () => {
           variant="contained"
           sx={{
             backgroundColor: "#06B6D4",
-            color: "#fff",
-            textTransform: "none",
             borderRadius: "10px",
+            textTransform: "none",
             "&:hover": { backgroundColor: "#0891b2" },
           }}
         >
@@ -187,7 +208,7 @@ const TdmDetailPage = () => {
 
       <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
 
-      {/* NAVIGATION TABS */}
+      {/* TABS */}
       <Box
         sx={{
           display: "flex",
@@ -206,7 +227,7 @@ const TdmDetailPage = () => {
         ].map((tab) => (
           <Button
             key={tab.key}
-            onClick={() => handleSectionChange(tab.key)}
+            onClick={() => setSection(tab.key)}
             sx={{
               color:
                 section === tab.key ? "#06B6D4" : "rgba(255,255,255,0.7)",
@@ -226,8 +247,8 @@ const TdmDetailPage = () => {
 
       <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
 
-      {/* PAGE CONTENT */}
-      <Box sx={{ p: 4, maxWidth: "900px", mx: "auto" }}>
+      {/* CONTENT */}
+      <Box sx={{ p: 4, maxWidth: "1250px", mx: "auto" }}>
         <Card
           sx={{
             backgroundColor: "rgba(255,255,255,0.03)",
@@ -238,41 +259,12 @@ const TdmDetailPage = () => {
           }}
         >
           <CardContent>
-            {section === "overview" && (
-              <Typography>
-                Welcome to <b>{tdm.title}</b> — an exciting {tdm.mode} knockout
-                challenge with a total prizepool of {tdm.prizepool}. Entry fee:
-                {tdm.entry}. Only the best teams will survive!
-              </Typography>
-            )}
-
-            {section === "schedule" && (
-              <Typography>🕒 Schedule details coming soon...</Typography>
-            )}
-
-            {section === "live" && (
-              <Typography>🎮 Watch the live matches here!</Typography>
-            )}
-
-            {section === "leaderboard" && (
-              <Typography>🏆 Leaderboard standings will be updated here.</Typography>
-            )}
-
-            {section === "rewards" && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  💰 Rewards Breakdown
-                </Typography>
-                <Typography>🥇 1st Position — {tdm.rewards.first}</Typography>
-                <Typography>🥈 2nd Position — {tdm.rewards.second}</Typography>
-                <Typography>🥉 3rd Position — {tdm.rewards.third}</Typography>
-                <Typography>🏅 4th Position — {tdm.rewards.fourth}</Typography>
-              </Box>
-            )}
-
-            {section === "teams" && (
-              <Typography>👥 Participating teams list will appear here.</Typography>
-            )}
+            {section === "overview" && <OverviewTab tdm={tdm} />}
+            {section === "schedule" && <ScheduleTab tdm={tdm} />}
+            {section === "live" && <LiveTab />}
+            {section === "leaderboard" && <LeaderboardTab />}
+            {section === "rewards" && <RewardsTab tdm={tdm} />}
+            {section === "teams" && <TeamTab />}
           </CardContent>
         </Card>
       </Box>
