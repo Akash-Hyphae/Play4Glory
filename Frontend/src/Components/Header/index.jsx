@@ -20,7 +20,7 @@ const Header = () => {
   ];
 
   return (
-    <header className="bg-[#23272A]">
+    <header className="bg-[#0B1220] border-b border-[#00E5FF] sticky top-0 z-50">
       <div className="header py-2">
         <div className="container flex items-center justify-between relative">
           {/* Logo */}
@@ -49,7 +49,7 @@ const Header = () => {
                         backgroundColor: "transparent !important",
                       },
                     }}
-                    className={`!text-white !capitalize font-semibold transition-all duration-300 ease-in-out hover:!text-[#06B6D4]
+                    className={`!text-[#E0F7FA] !capitalize font-semibold transition-all duration-300 ease-in-out hover:!text-[#00E5FF]
                       ${
                         isActive
                           ? "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-[#06B6D4]"
@@ -91,7 +91,7 @@ const Header = () => {
                 {/* Circular Profile Image */}
                 <Link to="/profile">
                   <img
-                    src="https://i.pravatar.cc/100?img=12"
+                    src="avatar.jpg"
                     alt="profile"
                     className="w-10 h-10 rounded-full border-2 border-cyan-500 hover:scale-105 transition-transform cursor-pointer"
                   />
