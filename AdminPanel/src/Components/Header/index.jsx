@@ -12,16 +12,16 @@ const Header = () => {
 
   const navItems = [
     { name: "Home", path: "/" },
-    { name: "Tournament", path: "/tournament" },
-    { name: "Scrim", path: "/scrim" },
-    { name: "TDM", path: "/tdm" },
-    { name: "Live ●", path: "/live" },
-    { name: "About Us", path: "/about-us" },
+    { name: "Create", path: "/create" },
+    { name: "Prize Ditribution", path: "/prize-distribution" },
+    { name: "ID Pass", path: "/id-pass" },
+    { name: "Points Table", path: "/points-table" },
+    { name: "For Host", path: "/host" },
   ];
 
   return (
     <header className="bg-[#0B1220] border-b border-[#00E5FF] sticky top-0 z-50">
-      <div className="header py-[8px]">
+      <div className="header py-2">
         <div className="container flex items-center justify-between relative">
           {/* Logo */}
           <div className="flex items-center">
