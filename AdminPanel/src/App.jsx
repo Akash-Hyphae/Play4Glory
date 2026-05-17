@@ -8,6 +8,8 @@ import IDPass from './Pages/IDPass'
 import PointsTable from './Pages/PointsTable'
 import Host from './Pages/Host'
 import Create from './Pages/Create'
+import Leaderboard from './Pages/Leaderboard'
+import IdPass from './Pages/IDPass'
 
 function App() {
 
@@ -18,9 +20,10 @@ function App() {
       <Route path='/' exact={true} element={<Home/>} />
       <Route path='/create' exact={true} element={<Create/>} />
       <Route path='/prize-distribution' exact={true} element={<PrizeDistribution/>} />
-      <Route path='/id-pass' exact={true} element={<IDPass/>} />
-      <Route path='/points-table' exact={true} element={<PointsTable/>} />
+      <Route path='/id-pass' exact={true} element={<IdPass/>} />
+      <Route path="/points-table" element={<PointsTable />} />
       <Route path='/host' exact={true} element={<Host/>} />
+      <Route path="/leaderboard" element={<Leaderboard />} />
     </Routes>
     </BrowserRouter>
   )
