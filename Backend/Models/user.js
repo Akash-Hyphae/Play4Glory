@@ -1,28 +1,33 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+    {
+        displayName: {
+            type: String,
+            required : true,
+        },
+        email: {
+            type: String,
+            required : true,
+            unique : true
+        },
+        password: {
+            type: String,
+            rquired : true,
+        },
+        inGameName: {
+            type: String,
+            required : true,
+            unique: true
+        },
+        inGameId: {
+            type: Number,
+            required: true,
+        },   
+    },
+    {
+        timestamps: true,
+    }
+)
 
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true
-  },
-
-  password: {
-    type: String,
-    required: true
-  },
-
-  ign: String,
-  igid: Number,
-
-}, { timestamps: true });
-
-export default mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", userSchema);

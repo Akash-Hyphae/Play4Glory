@@ -7,8 +7,8 @@ const Header = () => {
   const location = useLocation();
 
   // 🔹 Example auth state (replace with real auth later)
-  const isLoggedIn = localStorage.getItem("playerToken");
-  const walletBalance = localStorage.getItem("1200000") || 10000000000;
+  const isLoggedIn = localStorage.getItem("");
+  const walletBalance = localStorage.getItem("walletBalance") || 0;
 
   const navItems = [
     { name: "Home", path: "/" },
