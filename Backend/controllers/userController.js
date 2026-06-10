@@ -90,7 +90,7 @@ const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "7d",
-      }
+      },
     );
 
     res.status(200).json({
@@ -100,8 +100,10 @@ const loginUser = async (req, res) => {
 
       user: {
         _id: user._id,
-        name: user.name,
+        displayName: user.displayName,
         email: user.email,
+        inGameName: user.inGameName,
+        inGameId: user.inGameId,
         role: user.role,
       },
     });
@@ -119,8 +121,16 @@ const getProfile = async (req, res) => {
   });
 };
 
+const adminDashboard = async (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Welcome Admin",
+  });
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getProfile,
+  adminDashboard,
 };
