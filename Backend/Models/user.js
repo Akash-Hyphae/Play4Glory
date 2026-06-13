@@ -35,6 +35,12 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    joinedTournaments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Tournament",
+      },
+    ],
   },
   {
     timestamps: true,

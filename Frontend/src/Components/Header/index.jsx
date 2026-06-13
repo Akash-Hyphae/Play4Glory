@@ -7,7 +7,7 @@ const Header = () => {
   const location = useLocation();
 
   // 🔹 Example auth state (replace with real auth later)
-  const isLoggedIn = localStorage.getItem("");
+  const isLoggedIn = !!localStorage.getItem("playerToken");
   const walletBalance = localStorage.getItem("walletBalance") || 0;
 
   const navItems = [

@@ -5,7 +5,8 @@ const {
   registerUser,
   loginUser,
   getProfile,
-  adminDashboard
+  adminDashboard,
+  getMyTournaments,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -17,6 +18,12 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 router.get("/profile", protect, getProfile);
+
+router.get(
+  "/my-tournaments",
+  protect,
+  getMyTournaments
+);
 
 router.get("/admin", protect, admin, adminDashboard);
 

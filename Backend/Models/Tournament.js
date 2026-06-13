@@ -67,10 +67,16 @@ const tournamentSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    participants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("Tournament", tournamentSchema);
