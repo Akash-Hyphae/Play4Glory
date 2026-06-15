@@ -41,6 +41,20 @@ const userSchema = new mongoose.Schema(
         ref: "Tournament",
       },
     ],
+    walletBalance: {
+      type: Number,
+      default: 0,
+    },
+
+    totalWinnings: {
+      type: Number,
+      default: 0,
+    },
+
+    totalWithdraw: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

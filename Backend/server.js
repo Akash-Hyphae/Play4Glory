@@ -4,6 +4,7 @@ require("dotenv").config();
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const tournamentRoutes = require("./routes/tournamentRoutes");
+const walletRoutes = require("./routes/walletRoutes");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/tournaments", tournamentRoutes);
+app.use("/api/wallet", walletRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
