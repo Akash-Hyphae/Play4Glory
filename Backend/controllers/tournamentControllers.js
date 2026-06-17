@@ -1,5 +1,6 @@
 const Tournament = require("../models/Tournament");
 const User = require("../models/User");
+const WalletTransaction = require("../models/walletTransaction");
 
 const createTournament = async (req, res) => {
   try {
@@ -51,13 +52,29 @@ const joinTournament = async (req, res) => {
         message: "You have already joined this tournament",
       });
     }
+    const user = await User.findById(req.user._id);
+
+    if (user.walletBalance < tournament.entryFee) {
+      return res.status(400).json({
+        message: "Insufficient Wallet Balance",
+      });
+    }
+
+    user.walletBalance -= tournament.entryFee;
+
+    await WalletTransaction.create({
+      user: req.user._id,
+      amount: tournament.entryFee,
+      type: "entry_fee",
+      status: "completed",
+      description: `Joined ${tournament.title}`,
+    });
+
     tournament.participants.push(req.user._id);
 
     tournament.filledSlots += 1;
 
     await tournament.save();
-
-    const user = await User.findById(req.user._id);
 
     user.joinedTournaments.push(tournament._id);
 
@@ -141,7 +158,6 @@ const getTournamentById = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   createTournament,
