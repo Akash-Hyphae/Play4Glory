@@ -21,12 +21,13 @@ const getWalletHistory = async (req, res) => {
 
 const addMoney = async (req, res) => {
   try {
+    const { amount } = req.body;
+
     if (!amount || amount <= 0) {
       return res.status(400).json({
         message: "Invalid Amount",
       });
     }
-    const { amount } = req.body;
 
     const user = await User.findById(req.user._id);
     user.walletBalance += amount;

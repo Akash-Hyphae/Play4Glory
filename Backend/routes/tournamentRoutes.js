@@ -30,7 +30,6 @@ router.post(
   "/join/:id",
   protect,
   joinTournament,
-  getTournamentById,
 );
 
 module.exports = router;
