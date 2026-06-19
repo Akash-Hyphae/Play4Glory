@@ -12,6 +12,7 @@ const mvpRoutes = require("./routes/mvpRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 const tdmMatchRoutes = require("./routes/tdmMatchRoutes");
 const withdrawRoutes = require("./routes/withdrawRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/mvp", mvpRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/tdm-matches", tdmMatchRoutes);
 app.use("/api/withdraw", withdrawRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
