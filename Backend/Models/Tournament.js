@@ -8,6 +8,12 @@ const tournamentSchema = new mongoose.Schema(
       trim: true,
     },
 
+    eventType: {
+      type: String,
+      required: true,
+      enum: ["tournament", "scrim", "tdm"],
+    },
+
     game: {
       type: String,
       required: true,

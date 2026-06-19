@@ -7,7 +7,8 @@ const {
   getProfile,
   adminDashboard,
   getMyTournaments,
-  getWallet
+  getWallet,
+  getMyRegistrations,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -30,6 +31,12 @@ router.get(
   "/wallet",
   protect,
   getWallet
+);
+
+router.get(
+  "/my-registrations",
+  protect,
+  getMyRegistrations
 );
 
 router.get("/admin", protect, admin, adminDashboard);

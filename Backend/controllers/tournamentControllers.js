@@ -4,11 +4,12 @@ const WalletTransaction = require("../models/walletTransaction");
 
 const createTournament = async (req, res) => {
   try {
-    const { title, game, tournamentType, entryFee, maxSlots, startTime } =
+    const { title,eventType, game, tournamentType, entryFee, maxSlots, startTime } =
       req.body;
 
     const tournament = await Tournament.create({
       title,
+      eventType,
       game,
       tournamentType,
       entryFee,

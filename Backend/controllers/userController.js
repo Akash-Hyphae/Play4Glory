@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const TeamRegistration = require("../models/TeamRegistration");
 
 const registerUser = async (req, res) => {
   try {
@@ -166,6 +167,24 @@ const getWallet = async (req, res) => {
   }
 };
 
+const getMyRegistrations = async (req, res) => {
+  try {
+    const registrations = await TeamRegistration.find({
+      registeredBy: req.user._id,
+    }).populate("tournament");
+
+    res.status(200).json({
+      success: true,
+      count: registrations.length,
+      registrations,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -173,4 +192,5 @@ module.exports = {
   adminDashboard,
   getMyTournaments,
   getWallet,
+  getMyRegistrations,
 };

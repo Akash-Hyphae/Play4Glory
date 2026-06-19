@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const pointsTableSchema = new mongoose.Schema(
+const mvpSchema = new mongoose.Schema(
   {
     tournament: {
       type: mongoose.Schema.Types.ObjectId,
@@ -8,28 +8,27 @@ const pointsTableSchema = new mongoose.Schema(
       required: true,
     },
 
-    team: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "TeamRegistration",
+    playerName: {
+      type: String,
       required: true,
     },
 
-    placementPoints: {
+    teamName: {
+      type: String,
+      required: true,
+    },
+
+    kills: {
       type: Number,
       default: 0,
     },
 
-    finishPoints: {
+    damage: {
       type: Number,
       default: 0,
     },
 
-    chickenDinners: {
-      type: Number,
-      default: 0,
-    },
-
-    totalPoints: {
+    survivalTime: {
       type: Number,
       default: 0,
     },
@@ -39,7 +38,4 @@ const pointsTableSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model(
-  "PointsTable",
-  pointsTableSchema
-);
+module.exports = mongoose.model("MVP", mvpSchema);
