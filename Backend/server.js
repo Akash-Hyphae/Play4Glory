@@ -8,6 +8,7 @@ const walletRoutes = require("./routes/walletRoutes");
 const teamRegistrationRoutes = require("./routes/teamRegistrationRoutes");
 const pointsTableRoutes = require("./routes/pointsTableRoutes");
 const mvpRoutes = require("./routes/mvpRoutes");
+const roomRoutes = require("./routes/roomRoutes");
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api/wallet", walletRoutes);
 app.use("/api/registrations", teamRegistrationRoutes);
 app.use("/api/points-table", pointsTableRoutes);
 app.use("/api/mvp", mvpRoutes);
+app.use("/api/rooms", roomRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
