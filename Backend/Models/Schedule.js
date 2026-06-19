@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const tdmMatchSchema = new mongoose.Schema(
+const scheduleSchema = new mongoose.Schema(
   {
     tournament: {
       type: mongoose.Schema.Types.ObjectId,
@@ -8,37 +8,30 @@ const tdmMatchSchema = new mongoose.Schema(
       required: true,
     },
 
+    title: {
+      type: String,
+      required: true,
+    },
+
     round: {
       type: String,
       required: true,
-      enum: [
-        "Round 1",
-        "Quarter Final",
-        "Semi Final",
-        "Final",
-      ],
     },
 
-    teamA: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "TeamRegistration",
-      required: true,
+    mapName: {
+      type: String,
+      default: "Erangel",
     },
 
-    teamB: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "TeamRegistration",
-      required: true,
-    },
-
-    winner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "TeamRegistration",
-      default: null,
-    },
-
-    matchTime: {
+    startTime: {
       type: Date,
+      required: true,
+    },
+
+    room: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Room",
+      default: null,
     },
 
     status: {
@@ -57,6 +50,6 @@ const tdmMatchSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model(
-  "TDMMatch",
-  tdmMatchSchema
+  "Schedule",
+  scheduleSchema
 );

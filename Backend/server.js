@@ -5,10 +5,12 @@ const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const tournamentRoutes = require("./routes/tournamentRoutes");
 const walletRoutes = require("./routes/walletRoutes");
+const scheduleRoutes = require("./routes/scheduleRoutes");
 const teamRegistrationRoutes = require("./routes/teamRegistrationRoutes");
 const pointsTableRoutes = require("./routes/pointsTableRoutes");
 const mvpRoutes = require("./routes/mvpRoutes");
 const roomRoutes = require("./routes/roomRoutes");
+const tdmMatchRoutes = require("./routes/tdmMatchRoutes");
 
 const app = express();
 
@@ -20,10 +22,12 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/tournaments", tournamentRoutes);
 app.use("/api/wallet", walletRoutes);
+app.use("/api/schedules", scheduleRoutes);
 app.use("/api/registrations", teamRegistrationRoutes);
 app.use("/api/points-table", pointsTableRoutes);
 app.use("/api/mvp", mvpRoutes);
 app.use("/api/rooms", roomRoutes);
+app.use("/api/tdm-matches", tdmMatchRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
