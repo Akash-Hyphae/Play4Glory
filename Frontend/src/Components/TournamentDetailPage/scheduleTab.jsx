@@ -1,13 +1,6 @@
 import { Box, Typography, Card } from "@mui/material";
-
-const matches = [
-  { map: "Rondo", time: "6:00 PM" },
-  { map: "Erangel", time: "7:00 PM" },
-  { map: "Erangel", time: "7:45 PM" },
-  { map: "Erangel", time: "8:30 PM" },
-  { map: "Miramar", time: "9:15 PM" },
-  { map: "Miramar", time: "10:00 PM" },
-];
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
 
 const mapColors = {
   Erangel: "#00e5ff",
@@ -16,10 +9,26 @@ const mapColors = {
   Rondo: "#ff4081",
 };
 
-const ScheduleTab = () => {
+const ScheduleTab = ({ tournament }) => {
+  const [matches, setMatches] = useState([]);
+
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      try {
+        const res = await api.get(`/schedules/${tournament._id}`);
+
+        setMatches(res.data.schedules);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    if (tournament?._id) {
+      fetchSchedules();
+    }
+  }, [tournament]);
   return (
     <Box>
-
       <Typography
         sx={{
           fontSize: "22px",
@@ -49,7 +58,6 @@ const ScheduleTab = () => {
             },
           }}
         >
-
           {/* Match Number Circle */}
           <Box
             sx={{
@@ -78,11 +86,11 @@ const ScheduleTab = () => {
                 fontSize: "16px",
               }}
             >
-              Match {i + 1} • {match.map}
+              {match.title} • {match.mapName}
             </Typography>
 
             <Typography sx={{ color: "#9ca3af", fontSize: "14px" }}>
-              Start Time: {match.time}
+              Start Time: {new Date(match.startTime).toLocaleString()}
             </Typography>
           </Box>
 
@@ -94,16 +102,14 @@ const ScheduleTab = () => {
               borderRadius: "8px",
               fontSize: "13px",
               fontWeight: 600,
-              background: mapColors[match.map],
+              background: mapColors[match.mapName] || "#06B6D4",
               color: "#000",
             }}
           >
-            {match.map}
+            {match.mapName}
           </Box>
-
         </Card>
       ))}
-
     </Box>
   );
 };

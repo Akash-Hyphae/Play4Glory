@@ -1,19 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import api from "../../api/axios";;
 
-const players = [
-  { name: "Jonathan", kills: 24, damage: 4521, survival: "23m 10s" },
-  { name: "Goblin", kills: 21, damage: 4210, survival: "22m 04s" },
-  { name: "ScoutOP", kills: 20, damage: 3980, survival: "21m 45s" },
-  { name: "Neyoo", kills: 18, damage: 3670, survival: "20m 30s" },
-  { name: "ClutchGod", kills: 17, damage: 3510, survival: "19m 55s" },
-  { name: "Mavi", kills: 16, damage: 3425, survival: "19m 20s" },
-  { name: "Omega", kills: 15, damage: 3301, survival: "18m 10s" },
-  { name: "AkshaT", kills: 14, damage: 3190, survival: "18m 02s" },
-  { name: "Zgod", kills: 13, damage: 3005, survival: "17m 33s" },
-  { name: "Punk", kills: 12, damage: 2890, survival: "17m 05s" },
-];
 
-const MVPTable = () => {
+
+const MVPTable = ({ tournament }) => {
+  const [players, setPlayers] = useState([]);
+
+  useEffect(() => {
+    const fetchMVP = async () => {
+      try {
+        const res = await api.get(
+          `/mvp/${tournament._id}`
+        );
+
+        setPlayers(res.data.mvpPlayers);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    if (tournament?._id) {
+      fetchMVP();
+    }
+  }, [tournament]);
+
+  if (!tournament) return null;
   return (
     <div className="mt-6 bg-[#0f172a] rounded-xl p-6 border border-gray-700">
       
@@ -44,7 +55,7 @@ const MVPTable = () => {
               <td className="py-4">{index + 1}</td>
 
               <td className="font-medium text-white">
-                {player.name}
+                {player.playerName}
               </td>
 
               <td className="text-cyan-400">
@@ -56,8 +67,8 @@ const MVPTable = () => {
               </td>
 
               <td>
-                {player.survival}
-              </td>
+  {player.survivalTime}
+</td>
             </tr>
           ))}
         </tbody>

@@ -1,6 +1,6 @@
 import { Box, Typography, Divider } from "@mui/material";
 
-const OverviewTab = ({ tournament }) => {
+const OverviewTab = ({ tournament, calculations }) => {
   return (
     <Box>
       <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
@@ -8,14 +8,16 @@ const OverviewTab = ({ tournament }) => {
       </Typography>
 
       <Typography sx={{ mb: 1 }}>
-        🏆 Mode: {tournament.mode.toUpperCase()}
+        🏆 Mode: {tournament.tournamentType.toUpperCase()}
       </Typography>
       <Typography sx={{ mb: 1 }}>
-        💰 Prize Pool: {tournament.prizepool}
+        💰 Prize Pool: {calculations?.prizePool}
       </Typography>
-      <Typography sx={{ mb: 1 }}>🎟 Entry Fee: {tournament.entry}</Typography>
       <Typography sx={{ mb: 1 }}>
-        👥 Players Joined: {tournament.players}
+        🎟 Entry Fee: ₹{tournament.entryFee}
+      </Typography>
+      <Typography sx={{ mb: 1 }}>
+        👥 Players Joined: {tournament.filledSlots}/{tournament.maxSlots}
       </Typography>
 
       <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.1)" }} />
@@ -24,10 +26,10 @@ const OverviewTab = ({ tournament }) => {
         Rewards Distribution
       </Typography>
 
-      <Typography>🥇 1st: {tournament.rewards.first}</Typography>
-      <Typography>🥈 2nd: {tournament.rewards.second}</Typography>
-      <Typography>🥉 3rd: {tournament.rewards.third}</Typography>
-      <Typography>⭐ MVP: {tournament.rewards.mvp}</Typography>
+      <Typography>🥇 1st: ₹{calculations?.firstPrize || 0}</Typography>
+      <Typography>🥈 2nd: ₹{calculations?.secondPrize || 0}</Typography>
+      <Typography>🥉 3rd: ₹{calculations?.thirdPrize || 0}</Typography>
+      <Typography>⭐ MVP: ₹{calculations?.mvpPrize || 0}</Typography>
 
       <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.1)" }} />
 
