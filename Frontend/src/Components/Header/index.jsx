@@ -8,7 +8,7 @@ const Header = () => {
 
   // 🔹 Example auth state (replace with real auth later)
   const isLoggedIn = !!localStorage.getItem("playerToken");
-  const walletBalance = localStorage.getItem("walletBalance") || 0;
+  const walletBalance = localStorage.getItem("walletBalance") || "0";
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -85,7 +85,9 @@ const Header = () => {
                 {/* Wallet */}
                 <div className="flex items-center gap-2 bg-[#2C2F33] px-3 py-1 rounded-lg border border-[#06B6D4]">
                   <Wallet size={18} className="text-[#06B6D4]" />
-                  <span className="text-white font-semibold">₹{walletBalance}</span>
+                  <span className="text-white font-semibold">
+                    ₹{walletBalance}
+                  </span>
                 </div>
 
                 {/* Circular Profile Image */}

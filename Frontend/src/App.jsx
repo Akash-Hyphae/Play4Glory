@@ -15,14 +15,6 @@ import { useEffect } from "react";
 import ProfilePage from "./Pages/Profile";
 
 function App() {
-  useEffect(() => {
-    // simulate logged-in user globally
-    if (!localStorage.getItem("playerToken")) {
-      localStorage.setItem("playerToken", "demo-token");
-      localStorage.setItem("playerName", "Akash Singh");
-      localStorage.setItem("walletBalance", 1250);
-    }
-  }, []);
   return (
     <BrowserRouter>
       <Header />
@@ -34,7 +26,6 @@ function App() {
         <Route path="/tdm" exact={true} element={<TdmKnockoutSection />} />
         <Route path="/tdm-details/:id" element={<TdmDetailsPage />} />
         <Route path="/live" exact={true} element={<LivePage />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/profile" element={<ProfilePage />} />

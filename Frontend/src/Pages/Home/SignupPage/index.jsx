@@ -5,6 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import InputAdornment from "@mui/material/InputAdornment";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import api from "../../../Api/axios";
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -21,10 +22,29 @@ const SignupPage = () => {
 
   const handleChange = (k) => (e) =>
     setForm((s) => ({ ...s, [k]: e.target.value }));
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    // sign up logic
-    console.log("signup", form);
+
+    if (form.password !== form.confirm) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    try {
+      const res = await api.post("/users/register", {
+        displayName: form.name,
+        email: form.email,
+        password: form.password,
+        inGameName: form.ign,
+        inGameId: form.igid,
+      });
+
+      alert("Account Created Successfully");
+
+      navigate("/login");
+    } catch (error) {
+      alert(error.response?.data?.message || "Registration Failed");
+    }
   };
 
   return (

@@ -2,17 +2,38 @@ import React, { useState } from "react";
 import { Box, TextField, Button, Typography, IconButton, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CloseIcon from "@mui/icons-material/Close";
+import api from "../../Api/axios";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const submit = (e) => {
-    e.preventDefault();
-    // handle auth here
-    console.log("login", { email, password });
-  };
+  const submit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await api.post("/users/login", {
+      email,
+      password,
+    });
+
+    localStorage.setItem(
+      "playerToken",
+      res.data.token
+    );
+
+    localStorage.setItem(
+      "playerName",
+      res.data.displayName
+    );
+
+    navigate("/");
+  } catch (error) {
+    console.log(error.response?.data);
+    alert(error.response?.data?.message || "Login Failed");
+  }
+};
 
   return (
     <Box
