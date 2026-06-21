@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "../../api/axios";
 import {
   Box,
   Typography,
@@ -19,84 +20,40 @@ import TeamTab from "./TeamTab";
 const TdmDetailPage = () => {
   const { id } = useParams();
   const [section, setSection] = useState("overview");
+  const [tdm, setTdm] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Sample Data (FIXED: added image + status)
-  const tdms = [
-    {
-      id: 1,
-      title: "BGMI TDM Knockout 1.0",
-      date: "1-Jan to 5-Jan",
-      prizepool: "₹5000",
-      entry: "₹100",
-      mode: "squad",
-      status: "Ongoing",
-      image:
-        "https://images.unsplash.com/photo-1542751371-adc38448a05e",
-      rewards: {
-        first: "₹2000",
-        second: "₹1500",
-        third: "₹1000",
-        fourth: "₹500",
-      },
-      players: "50/64",
-    },
-    {
-      id: 2,
-      title: "BGMI TDM Solo Blitz",
-      date: "10-Jan to 15-Jan",
-      prizepool: "₹4000",
-      entry: "₹80",
-      mode: "solo",
-      status: "Upcoming",
-      image:
-        "https://images.unsplash.com/photo-1511512578047-dfb367046420",
-      rewards: {
-        first: "₹1500",
-        second: "₹1200",
-        third: "₹800",
-        fourth: "₹500",
-      },
-      players: "58/60",
-    },
-    {
-      id: 3,
-      title: "BGMI TDM Duo Domination",
-      date: "20-Jan to 25-Jan",
-      prizepool: "₹6000",
-      entry: "₹120",
-      mode: "duo",
-      status: "Ongoing",
-      image:
-        "https://images.unsplash.com/photo-1500673922987-e212871fec22",
-      rewards: {
-        first: "₹2500",
-        second: "₹2000",
-        third: "₹1000",
-        fourth: "₹500",
-      },
-      players: "48/50",
-    },
-    {
-      id: 4,
-      title: "BGMI TDM Power Clash",
-      date: "25-Jan to 30-Jan",
-      prizepool: "₹10000",
-      entry: "₹200",
-      mode: "squad",
-      status: "Completed",
-      image:
-        "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8",
-      rewards: {
-        first: "₹4000",
-        second: "₹3000",
-        third: "₹2000",
-        fourth: "₹1000",
-      },
-      players: "64/64",
-    },
-  ];
+  useEffect(() => {
+    const fetchTournament = async () => {
+      try {
+        const res = await api.get(`/tournaments/${id}`);
 
-  const tdm = tdms.find((t) => t.id === parseInt(id));
+        setTdm(res.data.tournament);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTournament();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#fff",
+        }}
+      >
+        Loading...
+      </Box>
+    );
+  }
 
   // ✅ NOT FOUND
   if (!tdm) {
@@ -129,7 +86,8 @@ const TdmDetailPage = () => {
         sx={{
           position: "relative",
           height: 300,
-          backgroundImage: `url(${tdm.image})`,
+          backgroundImage:
+            "url(https://images.unsplash.com/photo-1542751371-adc38448a05e)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           display: "flex",
@@ -152,7 +110,7 @@ const TdmDetailPage = () => {
           </Typography>
 
           <Typography variant="body2" color="gray">
-            {tdm.date}
+            {new Date(tdm.startTime).toLocaleDateString()}
           </Typography>
 
           <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
@@ -161,17 +119,16 @@ const TdmDetailPage = () => {
               size="small"
               sx={{
                 backgroundColor:
-                  tdm.status === "Ongoing"
+                  tdm.status === "live"
                     ? "#0EA5E9"
-                    : tdm.status === "Completed"
-                    ? "#22C55E"
-                    : "#DC2626",
-                color: "#fff",
+                    : tdm.status === "completed"
+                      ? "#22C55E"
+                      : "#DC2626",
               }}
             />
 
             <Chip
-              label={tdm.mode}
+              label={tdm.tournamentType}
               size="small"
               sx={{
                 backgroundColor: "rgba(255,255,255,0.1)",
@@ -180,7 +137,7 @@ const TdmDetailPage = () => {
             />
 
             <Chip
-              label={`Prizepool ${tdm.prizepool}`}
+              label={`Prizepool ${`₹${tdm.entryFee * tdm.maxSlots * 0.8}`}`}
               size="small"
               sx={{
                 backgroundColor: "rgba(255,255,255,0.1)",
@@ -229,8 +186,7 @@ const TdmDetailPage = () => {
             key={tab.key}
             onClick={() => setSection(tab.key)}
             sx={{
-              color:
-                section === tab.key ? "#06B6D4" : "rgba(255,255,255,0.7)",
+              color: section === tab.key ? "#06B6D4" : "rgba(255,255,255,0.7)",
               borderBottom:
                 section === tab.key
                   ? "2px solid #06B6D4"
@@ -260,11 +216,11 @@ const TdmDetailPage = () => {
         >
           <CardContent>
             {section === "overview" && <OverviewTab tdm={tdm} />}
-            {section === "schedule" && <ScheduleTab tdm={tdm} />}
-            {section === "live" && <LiveTab />}
-            {section === "leaderboard" && <LeaderboardTab />}
+            {section === "schedule" && <ScheduleTab tournamentId={id} />}
+            {section === "live" && <LiveTab tournamentId={id} />}
+            {section === "leaderboard" && <LeaderboardTab tournamentId={id} />}
             {section === "rewards" && <RewardsTab tdm={tdm} />}
-            {section === "teams" && <TeamTab />}
+            {section === "teams" && <TeamTab tournamentId={id} />}
           </CardContent>
         </Card>
       </Box>

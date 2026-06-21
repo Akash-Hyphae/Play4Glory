@@ -1,155 +1,130 @@
-import React, { useState } from "react";
-import { Box, Typography, Card, CardContent, Button } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import api from "../../api/axios";
+import { Box, Typography, Card, CardContent } from "@mui/material";
 
-const isAdmin = true;
+export default function ScheduleTab({ tournamentId }) {
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-// 👉 Generate 64 teams automatically
-const generateTeams = () => {
-  return Array.from({ length: 64 }, (_, i) => `Team ${i + 1}`);
-};
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const res = await api.get(`/tdm-match/${tournamentId}`);
+        setMatches(res.data.matches);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-const roundNames = [
-  "Round 1",
-  "Round 2",
-  "Round 3",
-  "Quarter Final",
-  "Semi Final",
-  "Final",
-];
+    fetchMatches();
+  }, [tournamentId]);
 
-// 👉 Convert teams → Round 1 matches (32 matches)
-const createInitialRounds = () => {
-  const teams = generateTeams();
-  const round1 = [];
-
-  for (let i = 0; i < teams.length; i += 2) {
-    round1.push({
-      team1: teams[i],
-      team2: teams[i + 1],
-      winner: "",
-    });
+  if (loading) {
+    return (
+      <Typography color="white">
+        Loading Matches...
+      </Typography>
+    );
   }
 
-  return [
-    round1, // 32 matches
-    [], // 16 matches
-    [], // 8
-    [], // 4
-    [], // 2
-    [], // Final
-  ];
-};
+  const groupedMatches = {};
 
-export default function ScheduleTab() {
-  const [rounds, setRounds] = useState(createInitialRounds());
+  matches.forEach((match) => {
+    if (!groupedMatches[match.round]) {
+      groupedMatches[match.round] = [];
+    }
 
-  const selectWinner = (roundIndex, matchIndex, winner) => {
-    setRounds((prev) => {
-      const updated = [...prev];
-
-      // Prevent overwrite
-      if (updated[roundIndex][matchIndex].winner) return prev;
-
-      updated[roundIndex][matchIndex].winner = winner;
-
-      const nextRoundIndex = roundIndex + 1;
-
-      const nextMatchIndex = Math.floor(matchIndex / 2);
-
-      if (!updated[nextRoundIndex][nextMatchIndex]) {
-        updated[nextRoundIndex][nextMatchIndex] = {
-          team1: "",
-          team2: "",
-          winner: "",
-        };
-      }
-
-      if (matchIndex % 2 === 0) {
-        updated[nextRoundIndex][nextMatchIndex].team1 = winner;
-      } else {
-        updated[nextRoundIndex][nextMatchIndex].team2 = winner;
-      }
-
-      return [...updated];
-    });
-  };
+    groupedMatches[match.round].push(match);
+  });
 
   return (
     <Box sx={{ display: "flex", gap: 6, overflowX: "auto", p: 2 }}>
-      {rounds.map((round, roundIndex) => (
-        <Box key={roundIndex}>
-          <Typography sx={{ mb: 2, color: "#00e5ff" }}>
-            {roundNames[roundIndex] || `Round ${roundIndex + 1}`}
-          </Typography>
+      {Object.entries(groupedMatches).map(
+        ([roundName, roundMatches]) => (
+          <Box key={roundName}>
+            <Typography sx={{ mb: 2, color: "#00e5ff" }}>
+              {roundName}
+            </Typography>
 
-          {round.map((match, matchIndex) => (
-            <Card
-              key={matchIndex}
-              sx={{
-                mb: 4,
-                width: 220,
-                background: "#0f172a",
-                color: "white",
-                border: "1px solid #1e293b",
-                borderRadius: 3,
-              }}
-            >
-              <CardContent>
-                {/* Team 1 */}
-                <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography>{match.team1 || "TBD"}</Typography>
+            {roundMatches.map((match) => (
+              <Card
+                key={match._id}
+                sx={{
+                  mb: 4,
+                  width: 220,
+                  background: "#0f172a",
+                  color: "white",
+                  border: "1px solid #1e293b",
+                  borderRadius: 3,
+                }}
+              >
+                <CardContent>
+                  {/* Team A */}
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    mb={1}
+                  >
+                    <Typography>
+                      {match.teamA?.teamName || "TBD"}
+                    </Typography>
+                  </Box>
 
-                  {isAdmin && match.team1 && !match.winner && (
-                    <Button
-                      size="small"
-                      variant="contained"
-                      sx={{
-                        backgroundColor: "#22c55e",
-                        color: "#000",
-                        "&:hover": { backgroundColor: "#16a34a" },
-                      }}
-                      onClick={() =>
-                        selectWinner(roundIndex, matchIndex, match.team1)
-                      }
+                  {/* Team B */}
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                  >
+                    <Typography>
+                      {match.teamB?.teamName || "TBD"}
+                    </Typography>
+                  </Box>
+
+                  {/* Winner */}
+                  {match.winner && (
+                    <Typography
+                      mt={1}
+                      color="#22c55e"
+                      fontWeight="bold"
                     >
-                      Win
-                    </Button>
+                      🏆 {match.winner.teamName}
+                    </Typography>
                   )}
-                </Box>
 
-                {/* Team 2 */}
-                <Box display="flex" justifyContent="space-between">
-                  <Typography>{match.team2 || "TBD"}</Typography>
-
-                  {isAdmin && match.team2 && !match.winner && (
-                    <Button
-                      size="small"
-                      variant="contained"
-                      sx={{
-                        backgroundColor: "#22c55e",
-                        color: "#000",
-                        "&:hover": { backgroundColor: "#16a34a" },
-                      }}
-                      onClick={() =>
-                        selectWinner(roundIndex, matchIndex, match.team2)
-                      }
-                    >
-                      Win
-                    </Button>
-                  )}
-                </Box>
-
-                {/* Winner */}
-                {match.winner && (
-                  <Typography mt={1} color="#22c55e" fontWeight="bold">
-                    🏆 {match.winner}
+                  {/* Status */}
+                  <Typography
+                    mt={1}
+                    color={
+                      match.status === "completed"
+                        ? "#22c55e"
+                        : match.status === "live"
+                        ? "#06B6D4"
+                        : "#facc15"
+                    }
+                  >
+                    {match.status.toUpperCase()}
                   </Typography>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
-      ))}
+
+                  {/* Match Time */}
+                  {match.matchTime && (
+                    <Typography
+                      mt={1}
+                      fontSize="13px"
+                      color="#94a3b8"
+                    >
+                      {new Date(
+                        match.matchTime
+                      ).toLocaleString()}
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        )
+      )}
     </Box>
   );
 }

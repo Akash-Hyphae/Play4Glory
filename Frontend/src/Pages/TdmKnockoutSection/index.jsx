@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 import { FaMedal } from "react-icons/fa";
 import RegisterDialog from "../../Components/RegisterDialog";
@@ -8,77 +9,34 @@ const TdmKnockoutPage = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [openDialog, setOpenDialog] = useState(false);
+  const [tdmTournaments, setTdmTournaments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const tdmTournaments = [
-    {
-      id: 1,
-      title: "BGMI TDM Knockout 1.0",
-      date: "1-Jan to 5-Jan",
-      prizepool: "₹5000",
-      entry: "₹100",
-      mode: "squad",
-      rewards: {
-        first: "₹2000",
-        second: "₹1500",
-        third: "₹1000",
-        fourth: "₹500",
-      },
-      players: "50/64",
-      progress: 78,
-    },
-    {
-      id: 2,
-      title: "BGMI TDM Solo Blitz",
-      date: "10-Jan to 15-Jan",
-      prizepool: "₹4000",
-      entry: "₹80",
-      mode: "solo",
-      rewards: {
-        first: "₹1500",
-        second: "₹1200",
-        third: "₹800",
-        fourth: "₹500",
-      },
-      players: "58/60",
-      progress: 96,
-    },
-    {
-      id: 3,
-      title: "BGMI TDM Duo Domination",
-      date: "20-Jan to 25-Jan",
-      prizepool: "₹6000",
-      entry: "₹120",
-      mode: "duo",
-      rewards: {
-        first: "₹2500",
-        second: "₹2000",
-        third: "₹1000",
-        fourth: "₹500",
-      },
-      players: "48/50",
-      progress: 95,
-    },
-    {
-      id: 4,
-      title: "BGMI TDM Power Clash",
-      date: "25-Jan to 30-Jan",
-      prizepool: "₹10000",
-      entry: "₹200",
-      mode: "squad",
-      rewards: {
-        first: "₹4000",
-        second: "₹3000",
-        third: "₹2000",
-        fourth: "₹1000",
-      },
-      players: "64/64",
-      progress: 100,
-    },
-  ];
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      try {
+        const res = await api.get("/tournaments");
+
+        setTdmTournaments(
+          res.data.tournaments.filter((t) => t.tournamentCategory === "tdm"),
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTournaments();
+  }, []);
+
+  if (loading) {
+    return <div className="text-white text-center mt-20">Loading...</div>;
+  }
 
   const filteredTournaments = tdmTournaments.filter(
     (t) =>
-      (filter === "all" || t.mode === filter) &&
+      (filter === "all" || t.tournamentType === filter) &&
       t.title.toLowerCase().includes(search.toLowerCase()),
   );
 
@@ -117,18 +75,19 @@ const TdmKnockoutPage = () => {
         <div className="space-y-8">
           {filteredTournaments.map((t) => (
             <div
-              key={t.id}
+              key={t._id}
               className="bg-[#10131f] border border-cyan-700 rounded-2xl p-6 shadow-[0_0_20px_#00ffff22] hover:shadow-[0_0_25px_#00ffff55] transition-all duration-300"
             >
               <h3 className="text-2xl font-bold text-cyan-300 mb-1">
                 {t.title}
               </h3>
               <div className="text-sm text-gray-300 mb-4">
-                <span className="mr-4 text-cyan-200">Date:</span> {t.date}
-                <span className="mx-4 text-cyan-200">| Prizepool:</span>{" "}
-                {t.prizepool}
-                <span className="mx-4 text-cyan-200">| Entry Fee:</span>{" "}
-                {t.entry}
+                <span className="mr-4 text-cyan-200">Date:</span>{" "}
+                {new Date(t.startTime).toLocaleDateString()}
+                <span className="mx-4 text-cyan-200">| Prizepool:</span> ₹
+                {t.entryFee * t.maxSlots * 0.8}
+                <span className="mx-4 text-cyan-200">| Entry Fee:</span> ₹
+                {t.entryFee}
               </div>
 
               {/* Rewards */}
@@ -152,11 +111,13 @@ const TdmKnockoutPage = () => {
               <div className="relative h-1 bg-[#1b2033] rounded-full overflow-hidden mb-2">
                 <div
                   className="absolute top-0 left-0 h-full bg-[#06B6D4]"
-                  style={{ width: `${t.progress}%` }}
+                  style={{
+                    width: `${(t.filledSlots / t.maxSlots) * 100}%`,
+                  }}
                 ></div>
               </div>
               <div className="text-sm text-gray-400 text-right">
-                {t.players}
+                {t.filledSlots}/{t.maxSlots}
               </div>
 
               {/* Buttons */}
@@ -168,7 +129,7 @@ const TdmKnockoutPage = () => {
                   Register TDM
                 </button>
                 <button
-                  onClick={() => navigate(`/tdm-details/${t.id}`, { state: t })}
+                  onClick={() => navigate(`/tdm-details/${t._id}`)}
                   className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition"
                 >
                   Details
@@ -181,7 +142,7 @@ const TdmKnockoutPage = () => {
       <RegisterDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        tournamentTitle={tdmTournaments.title}
+        tournamentTitle="TDM Tournament"
       />
     </>
   );
