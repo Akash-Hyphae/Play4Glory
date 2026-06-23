@@ -113,6 +113,21 @@ const TournamentPage = () => {
                   MVP: ₹{Math.floor(t.entryFee * t.maxSlots * 0.8 * 0.05)}
                 </div>
               </div>
+
+              {/* Progress Bar */}
+              <div className="relative h-1 bg-[#1b2033] rounded-full overflow-hidden mb-2">
+                <div
+                  className="absolute top-0 left-0 h-full bg-[#06B6D4]"
+                  style={{
+                    width: `${((t.filledSlots || 0) / t.maxSlots) * 100}%`,
+                  }}
+                ></div>
+              </div>
+
+              <div className="text-sm text-gray-400 text-right mb-4">
+                {t.filledSlots || 0}/{t.maxSlots}
+              </div>
+
               {/* Buttons */}
               <div className="flex gap-4 mt-4">
                 <button

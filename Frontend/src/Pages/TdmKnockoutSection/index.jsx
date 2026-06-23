@@ -17,8 +17,10 @@ const TdmKnockoutPage = () => {
       try {
         const res = await api.get("/tournaments");
 
+        console.log(res.data.tournaments);
+
         setTdmTournaments(
-          res.data.tournaments.filter((t) => t.tournamentCategory === "tdm"),
+          res.data.tournaments.filter((t) => t.eventType === "tdm"),
         );
       } catch (error) {
         console.log(error);
@@ -30,15 +32,17 @@ const TdmKnockoutPage = () => {
     fetchTournaments();
   }, []);
 
-  if (loading) {
-    return <div className="text-white text-center mt-20">Loading...</div>;
-  }
+  
 
   const filteredTournaments = tdmTournaments.filter(
     (t) =>
-      (filter === "all" || t.tournamentType === filter) &&
+      (filter === "all" || t.tournamentType.toLowerCase() === filter) &&
       t.title.toLowerCase().includes(search.toLowerCase()),
   );
+
+  if (loading) {
+    return <div className="text-white text-center mt-20">Loading...</div>;
+  }
 
   return (
     <>
@@ -93,17 +97,23 @@ const TdmKnockoutPage = () => {
               {/* Rewards */}
               <div className="flex flex-wrap gap-4 text-sm mb-4">
                 <div className="flex items-center gap-1 text-orange-400">
-                  <FaMedal /> 1st: {t.rewards.first}
+                  <FaMedal /> 1st: ₹
+                  {Math.floor(t.entryFee * t.maxSlots * 0.8 * 0.6)}
                 </div>
+
                 <div className="flex items-center gap-1 text-gray-300">
-                  <FaMedal className="text-gray-400" /> 2nd: {t.rewards.second}
+                  <FaMedal className="text-gray-400" /> 2nd: ₹
+                  {Math.floor(t.entryFee * t.maxSlots * 0.8 * 0.25)}
                 </div>
+
                 <div className="flex items-center gap-1 text-amber-500">
-                  <FaMedal className="text-amber-600" /> 3rd: {t.rewards.third}
+                  <FaMedal className="text-amber-600" /> 3rd: ₹
+                  {Math.floor(t.entryFee * t.maxSlots * 0.8 * 0.1)}
                 </div>
+
                 <div className="flex items-center gap-1 text-yellow-400">
-                  <FaMedal className="text-yellow-500" /> 4th:{" "}
-                  {t.rewards.fourth}
+                  <FaMedal className="text-yellow-500" /> MVP: ₹
+                  {Math.floor(t.entryFee * t.maxSlots * 0.8 * 0.05)}
                 </div>
               </div>
 
