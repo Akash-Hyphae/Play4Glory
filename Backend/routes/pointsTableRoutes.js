@@ -13,7 +13,6 @@ const {
 
 const router = express.Router();
 
-// Admin adds team points
 router.post(
   "/",
   protect,
@@ -21,13 +20,11 @@ router.post(
   createPointsEntry
 );
 
-// Get leaderboard of a tournament
 router.get(
   "/:tournamentId",
   getTournamentLeaderboard
 );
 
-// Admin updates points
 router.put(
   "/:id",
   protect,

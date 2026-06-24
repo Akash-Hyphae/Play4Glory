@@ -2,18 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RegisterDialog from "../RegisterDialog";
 
-const TournamentCard = ({
-  data,
-  registerText = "Register",
-  isTDM = false,
-}) => {
+const TournamentCard = ({ data, registerText = "Register", isTDM = false }) => {
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
 
   const prizePool = Math.floor(
-    (data.entryFee || 0) *
-      (data.maxSlots || 0) *
-      0.8
+    (data.entryFee || 0) * (data.maxSlots || 0) * 0.8,
   );
 
   const rewards = isTDM
@@ -33,8 +27,7 @@ const TournamentCard = ({
   const filledSlots = data.filledSlots || 0;
   const totalSlots = data.maxSlots || 1;
 
-  const filledPercentage =
-    (filledSlots / totalSlots) * 100;
+  const filledPercentage = (filledSlots / totalSlots) * 100;
 
   return (
     <>
@@ -49,20 +42,12 @@ const TournamentCard = ({
           <p className="text-sm text-gray-400 mb-3">
             Date:{" "}
             <span className="text-[#06B6D4]">
-              {new Date(
-                data.startTime
-              ).toLocaleDateString()}
+              {new Date(data.startTime).toLocaleDateString()}
             </span>
-            &nbsp;|&nbsp;
-            Prizepool:{" "}
-            <span className="text-[#06B6D4]">
-              ₹{prizePool}
-            </span>
-            &nbsp;|&nbsp;
-            Entry Fee:{" "}
-            <span className="text-[#06B6D4]">
-              ₹{data.entryFee}
-            </span>
+            &nbsp;|&nbsp; Prizepool:{" "}
+            <span className="text-[#06B6D4]">₹{prizePool}</span>
+            &nbsp;|&nbsp; Entry Fee:{" "}
+            <span className="text-[#06B6D4]">₹{data.entryFee}</span>
           </p>
 
           <div className="text-gray-300 flex flex-wrap gap-x-5 text-sm mb-4">
@@ -84,8 +69,7 @@ const TournamentCard = ({
                 className="h-full transition-all duration-700"
                 style={{
                   width: `${filledPercentage}%`,
-                  background:
-                    "linear-gradient(to right, #06B6D4, #22D3EE)",
+                  background: "linear-gradient(to right, #06B6D4, #22D3EE)",
                 }}
               />
             </div>
@@ -97,9 +81,7 @@ const TournamentCard = ({
 
           <div className="relative flex gap-3 mt-3">
             <button
-              onClick={() =>
-                setOpenDialog(true)
-              }
+              onClick={() => setOpenDialog(true)}
               className="relative border border-[#06B6D4] text-[#06B6D4] hover:bg-[#06B6D4] hover:text-white px-5 py-2 rounded-md text-sm font-semibold transition-all duration-300"
             >
               {registerText}
@@ -110,7 +92,7 @@ const TournamentCard = ({
                 navigate(
                   isTDM
                     ? `/tdm-details/${data._id}`
-                    : `/tournament-details/${data._id}`
+                    : `/tournament-details/${data._id}`,
                 )
               }
               className="relative border border-[#06B6D4] text-[#06B6D4] hover:bg-[#06B6D4] hover:text-white px-5 py-2 rounded-md text-sm font-semibold transition-all duration-300"
@@ -123,10 +105,9 @@ const TournamentCard = ({
 
       <RegisterDialog
         open={openDialog}
-        onClose={() =>
-          setOpenDialog(false)
-        }
+        onClose={() => setOpenDialog(false)}
         tournamentTitle={data.title}
+        tournamentId={data._id}
       />
     </>
   );

@@ -14,6 +14,20 @@ const pointsTableSchema = new mongoose.Schema(
       required: true,
     },
 
+    group: {
+      type: String,
+      enum: [
+        "A",
+        "B",
+        "C",
+        "D",
+        "SF1",
+        "SF2",
+        "FINAL",
+      ],
+      default: "A",
+    },
+
     placementPoints: {
       type: Number,
       default: 0,
@@ -33,9 +47,24 @@ const pointsTableSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    qualified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
+  }
+);
+
+pointsTableSchema.index(
+  {
+    tournament: 1,
+    team: 1,
+  },
+  {
+    unique: true,
   }
 );
 

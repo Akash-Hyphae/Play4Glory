@@ -1,97 +1,66 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { FaEdit, FaSave } from "react-icons/fa";
+import api from "../../Api/axios";
 
-const createTeams = (prefix) => {
-  return Array.from({ length: 16 }, (_, i) => ({
-    id: i + 1,
-    team: `${prefix} Team ${i + 1}`,
-    placement: 0,
-    finish: 0,
-    chicken: 0,
-    total: 0,
-    editing: false,
-  }));
-};
-
-const initialGroups = {
-  "Group A": createTeams("A"),
-  "Group B": createTeams("B"),
-  "Group C": createTeams("C"),
-  "Group D": createTeams("D"),
-  "Semifinal-1": [],
-  "Semifinal-2": [],
-  Final: [],
+const groupMapping = {
+  "Group A": "A",
+  "Group B": "B",
+  "Group C": "C",
+  "Group D": "D",
+  "Semifinal-1": "SF1",
+  "Semifinal-2": "SF2",
+  Final: "FINAL",
 };
 
 const PointsTable = () => {
+  const { tournamentId } = useParams();
+
   const [activeGroup, setActiveGroup] =
     useState("Group A");
 
-  const [groups, setGroups] =
-    useState(initialGroups);
+  const [groups, setGroups] = useState({
+    "Group A": [],
+    "Group B": [],
+    "Group C": [],
+    "Group D": [],
+    "Semifinal-1": [],
+    "Semifinal-2": [],
+    Final: [],
+  });
 
-  // SORT TEAMS
-  const sortTeams = (teams) => {
-    return [...teams].sort((a, b) => {
+  const fetchPointsTable = async () => {
+    try {
+      const res = await api.get(
+        `/points-table/${tournamentId}`
+      );
 
-      // SORT BY TOTAL
-      if (b.total !== a.total) {
-        return b.total - a.total;
-      }
+      const data = res.data.groupedData;
 
-      // IF TOTAL SAME -> SORT BY CHICKEN
-      return b.chicken - a.chicken;
-    });
+      setGroups({
+        "Group A": data.A || [],
+        "Group B": data.B || [],
+        "Group C": data.C || [],
+        "Group D": data.D || [],
+        "Semifinal-1": data.SF1 || [],
+        "Semifinal-2": data.SF2 || [],
+        Final: data.FINAL || [],
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  // UPDATE SEMIFINALS + FINAL
-  const updateSemiFinals = (allGroups) => {
+  useEffect(() => {
+    fetchPointsTable();
+  }, []);
 
-    const topA = sortTeams(
-      allGroups["Group A"]
-    ).slice(0, 8);
+  const handleEdit = (id) => {
+    const updated = { ...groups };
 
-    const topB = sortTeams(
-      allGroups["Group B"]
-    ).slice(0, 8);
-
-    const topC = sortTeams(
-      allGroups["Group C"]
-    ).slice(0, 8);
-
-    const topD = sortTeams(
-      allGroups["Group D"]
-    ).slice(0, 8);
-
-    // SEMIFINAL 1
-    allGroups["Semifinal-1"] =
-      sortTeams([...topA, ...topB]);
-
-    // SEMIFINAL 2
-    allGroups["Semifinal-2"] =
-      sortTeams([...topC, ...topD]);
-
-    // FINAL
-    const semi1Top =
-      allGroups["Semifinal-1"].slice(0, 8);
-
-    const semi2Top =
-      allGroups["Semifinal-2"].slice(0, 8);
-
-    allGroups["Final"] = sortTeams([
-      ...semi1Top,
-      ...semi2Top,
-    ]);
-  };
-
-  // EDIT MODE
-  const handleEdit = (teamId) => {
-
-    const updatedGroups = { ...groups };
-
-    updatedGroups[activeGroup] =
-      updatedGroups[activeGroup].map((team) =>
-        team.id === teamId
+    updated[activeGroup] =
+      updated[activeGroup].map((team) =>
+        team._id === id
           ? {
               ...team,
               editing: !team.editing,
@@ -99,236 +68,215 @@ const PointsTable = () => {
           : team
       );
 
-    setGroups(updatedGroups);
-
-    updateSemiFinals(updatedGroups);
+    setGroups(updated);
   };
 
-  // HANDLE CHANGE
   const handleChange = (
-    teamId,
+    id,
     field,
     value
   ) => {
+    const updated = { ...groups };
 
-    const updatedGroups = { ...groups };
-
-    const updatedTeams =
-      updatedGroups[activeGroup].map((team) => {
-
-        if (team.id === teamId) {
-
-          const updatedTeam = {
+    updated[activeGroup] =
+      updated[activeGroup].map((team) => {
+        if (team._id === id) {
+          return {
             ...team,
             [field]: Number(value),
           };
-
-          // TOTAL = PLACEMENT + FINISH
-          updatedTeam.total =
-            updatedTeam.placement +
-            updatedTeam.finish;
-
-          return updatedTeam;
         }
 
         return team;
       });
 
-    updatedGroups[activeGroup] =
-      sortTeams(updatedTeams);
+    setGroups(updated);
+  };
 
-    setGroups(updatedGroups);
+  const handleSave = async (team) => {
+    try {
+      await api.put(
+        `/points-table/${team._id}`,
+        {
+          placementPoints:
+            team.placementPoints,
+          finishPoints:
+            team.finishPoints,
+          chickenDinners:
+            team.chickenDinners,
+        }
+      );
 
-    updateSemiFinals(updatedGroups);
+      fetchPointsTable();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#050816] text-white px-4 md:px-8 py-6">
 
-      {/* MAIN CONTAINER */}
-      <div className="border border-cyan-700 rounded-[30px] bg-[#070d22] p-5 shadow-[0_0_25px_#00ffff15]">
+      <div className="border border-cyan-700 rounded-[30px] bg-[#070d22] p-5">
 
         {/* GROUP BUTTONS */}
+
         <div className="flex flex-wrap gap-4 mb-8">
-
-          {Object.keys(groups).map((group) => (
-
-            <button
-              key={group}
-              onClick={() =>
-                setActiveGroup(group)
-              }
-              className={`px-7 py-3 rounded-xl border border-cyan-500 text-[16px] font-semibold transition-all duration-300 ${
-                activeGroup === group
-                  ? "bg-cyan-400 text-black shadow-[0_0_20px_#00ffff]"
-                  : "text-cyan-400 hover:bg-cyan-500 hover:text-black"
-              }`}
-            >
-              {group}
-            </button>
-
-          ))}
+          {Object.keys(groups).map(
+            (group) => (
+              <button
+                key={group}
+                onClick={() =>
+                  setActiveGroup(group)
+                }
+                className={`px-6 py-3 rounded-xl border border-cyan-500 ${
+                  activeGroup === group
+                    ? "bg-cyan-400 text-black"
+                    : "text-cyan-400"
+                }`}
+              >
+                {group}
+              </button>
+            )
+          )}
         </div>
 
-        {/* TABLE */}
         <div className="overflow-x-auto">
+          <table className="w-full">
 
-          <table className="w-full border-collapse">
-
-            {/* HEADER */}
             <thead>
-
-              <tr className="bg-[#1a2438] text-cyan-400 text-[15px]">
-
-                <th className="py-4 px-4 text-left">
-                  #
+              <tr className="bg-[#1a2438] text-cyan-400">
+                <th className="p-4">
+                  Rank
                 </th>
-
-                <th className="py-4 px-4 text-left">
+                <th className="p-4">
                   Team
                 </th>
-
-                <th className="py-4 px-4 text-center">
+                <th className="p-4">
                   Placement
                 </th>
-
-                <th className="py-4 px-4 text-center">
+                <th className="p-4">
                   Finish
                 </th>
-
-                <th className="py-4 px-4 text-center">
+                <th className="p-4">
                   Chicken
                 </th>
-
-                <th className="py-4 px-4 text-center">
+                <th className="p-4">
                   Total
                 </th>
-
-                <th className="py-4 px-4 text-center">
+                <th className="p-4">
                   Action
                 </th>
-
               </tr>
-
             </thead>
 
-            {/* BODY */}
             <tbody>
-
-              {groups[activeGroup].map(
-                (team, index) => (
-
+              {groups[activeGroup]
+                .sort(
+                  (a, b) =>
+                    b.totalPoints -
+                    a.totalPoints
+                )
+                .map((team, index) => (
                   <tr
-                    key={index}
-                    className="border-b border-[#26314d]"
+                    key={team._id}
+                    className="border-b border-gray-700"
                   >
-
-                    {/* RANK */}
-                    <td className="relative py-4 px-4 text-[16px] font-bold">
-
-                      {/* LEFT BAR */}
-                      <div
-                        className={`absolute left-0 top-0 h-full w-[5px] ${
-                          index < 8
-                            ? "bg-green-500"
-                            : "bg-red-500"
-                        }`}
-                      ></div>
-
+                    <td className="p-4">
                       {index + 1}
-
                     </td>
 
-                    {/* TEAM */}
-                    <td className="py-4 px-4 text-[16px] font-semibold">
-                      {team.team}
+                    <td className="p-4">
+                      {
+                        team.team
+                          ?.teamName
+                      }
                     </td>
 
-                    {/* PLACEMENT */}
-                    <td className="py-4 px-4 text-center">
-
+                    <td className="p-4">
                       {team.editing ? (
                         <input
                           type="number"
-                          value={team.placement}
+                          value={
+                            team.placementPoints
+                          }
                           onChange={(e) =>
                             handleChange(
-                              team.id,
-                              "placement",
+                              team._id,
+                              "placementPoints",
                               e.target.value
                             )
                           }
-                          className="w-20 bg-[#121826] border border-cyan-700 rounded-lg px-2 py-1 text-center outline-none text-sm"
+                          className="bg-black px-2 py-1 rounded"
                         />
                       ) : (
-                        <span className="text-[15px]">
-                          {team.placement}
-                        </span>
+                        team.placementPoints
                       )}
-
                     </td>
 
-                    {/* FINISH */}
-                    <td className="py-4 px-4 text-center">
-
+                    <td className="p-4">
                       {team.editing ? (
                         <input
                           type="number"
-                          value={team.finish}
+                          value={
+                            team.finishPoints
+                          }
                           onChange={(e) =>
                             handleChange(
-                              team.id,
-                              "finish",
+                              team._id,
+                              "finishPoints",
                               e.target.value
                             )
                           }
-                          className="w-20 bg-[#121826] border border-cyan-700 rounded-lg px-2 py-1 text-center outline-none text-sm"
+                          className="bg-black px-2 py-1 rounded"
                         />
                       ) : (
-                        <span className="text-[15px]">
-                          {team.finish}
-                        </span>
+                        team.finishPoints
                       )}
-
                     </td>
 
-                    {/* CHICKEN */}
-                    <td className="py-4 px-4 text-center">
-
+                    <td className="p-4">
                       {team.editing ? (
                         <input
                           type="number"
-                          value={team.chicken}
+                          value={
+                            team.chickenDinners
+                          }
                           onChange={(e) =>
                             handleChange(
-                              team.id,
-                              "chicken",
+                              team._id,
+                              "chickenDinners",
                               e.target.value
                             )
                           }
-                          className="w-20 bg-[#121826] border border-cyan-700 rounded-lg px-2 py-1 text-center outline-none text-sm"
+                          className="bg-black px-2 py-1 rounded"
                         />
                       ) : (
-                        <span className="text-[15px]">
-                          {team.chicken}
-                        </span>
+                        team.chickenDinners
                       )}
-
                     </td>
 
-                    {/* TOTAL */}
-                    <td className="py-4 px-4 text-center text-cyan-400 text-[18px] font-bold">
-                      {team.total}
+                    <td className="p-4 text-cyan-400 font-bold">
+                      {
+                        team.totalPoints
+                      }
                     </td>
 
-                    {/* ACTION */}
-                    <td className="py-4 px-4 text-center">
-
+                    <td className="p-4">
                       <button
-                        onClick={() =>
-                          handleEdit(team.id)
-                        }
-                        className="px-4 py-2 rounded-lg border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-black transition flex items-center gap-2 mx-auto text-sm"
+                        onClick={() => {
+                          if (
+                            team.editing
+                          ) {
+                            handleSave(
+                              team
+                            );
+                          }
+
+                          handleEdit(
+                            team._id
+                          );
+                        }}
+                        className="px-4 py-2 border border-cyan-500 rounded-lg flex items-center gap-2"
                       >
                         {team.editing ? (
                           <>
@@ -342,14 +290,11 @@ const PointsTable = () => {
                           </>
                         )}
                       </button>
-
                     </td>
-
                   </tr>
-                )
-              )}
-
+                ))}
             </tbody>
+
           </table>
         </div>
       </div>

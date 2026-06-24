@@ -25,7 +25,10 @@ function App() {
           element={<PrizeDistribution />}
         />
         <Route path="/id-pass" exact={true} element={<IdPass />} />
-        <Route path="/points-table" element={<PointsTable />} />
+        <Route
+  path="/points-table/:tournamentId"
+  element={<PointsTable />}
+/>
         <Route path="/host" exact={true} element={<Host />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/login" element={<Login />} />

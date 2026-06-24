@@ -2,6 +2,9 @@ const TeamRegistration = require("../models/TeamRegistration");
 const Tournament = require("../models/Tournament");
 const User = require("../models/User");
 const WalletTransaction = require("../models/walletTransaction");
+const PointsTable = require("../models/PointsTable");
+
+
 
 const registerTeam = async (req, res) => {
   try {
@@ -36,7 +39,6 @@ const registerTeam = async (req, res) => {
 
     const user = await User.findById(req.user._id);
 
-    // Check Wallet Balance
     if (user.walletBalance < tournament.entryFee) {
       return res.status(400).json({
         message: "Insufficient Wallet Balance",
@@ -51,9 +53,36 @@ const registerTeam = async (req, res) => {
       players,
     });
 
+    // Assign Group Automatically
+    const totalTeams = await TeamRegistration.countDocuments({
+      tournament: tournamentId,
+    });
+
+    let group = "A";
+
+    if (totalTeams <= 16) {
+      group = "A";
+    } else if (totalTeams <= 32) {
+      group = "B";
+    } else if (totalTeams <= 48) {
+      group = "C";
+    } else {
+      group = "D";
+    }
+
+    // Create Points Table Entry
+    await PointsTable.create({
+      tournament: tournamentId,
+      team: registration._id,
+      group,
+      placementPoints: 0,
+      finishPoints: 0,
+      chickenDinners: 0,
+      totalPoints: 0,
+    });
+
     user.walletBalance -= tournament.entryFee;
 
-    // Add Tournament To User History
     if (!user.joinedTournaments.includes(tournament._id)) {
       user.joinedTournaments.push(tournament._id);
     }
@@ -76,6 +105,7 @@ const registerTeam = async (req, res) => {
       success: true,
       message: "Team Registered Successfully",
       registration,
+      group,
     });
   } catch (error) {
     res.status(500).json({
@@ -101,8 +131,6 @@ const getTournamentRegistrations = async (req, res) => {
     });
   }
 };
-
-
 
 module.exports = {
   registerTeam,

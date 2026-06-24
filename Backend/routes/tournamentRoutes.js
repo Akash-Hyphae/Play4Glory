@@ -5,6 +5,7 @@ const {
   joinTournament,
   getAllTournaments,
   getTournamentById,
+  getMyTournaments,
 } = require("../controllers/tournamentControllers");
 
 const {
@@ -15,6 +16,15 @@ const {
 const router = express.Router();
 
 router.get("/", getAllTournaments);
+
+router.get(
+  "/my-tournaments",
+  protect,
+  admin,
+  getMyTournaments
+);
+
+
 router.get("/:id", getTournamentById);
 
 // Create Tournament (Admin Only)

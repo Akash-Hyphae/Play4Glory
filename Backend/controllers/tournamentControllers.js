@@ -160,9 +160,27 @@ const getTournamentById = async (req, res) => {
   }
 };
 
+const getMyTournaments = async (req, res) => {
+  try {
+    const tournaments = await Tournament.find({
+      createdBy: req.user._id,
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      tournaments,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createTournament,
   joinTournament,
   getAllTournaments,
   getTournamentById,
+  getMyTournaments,
 };

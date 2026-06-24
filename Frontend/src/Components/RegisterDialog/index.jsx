@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,8 +10,75 @@ import {
   Box,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import api from "../../Api/axios";
 
-const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
+const RegisterDialog = ({
+  open,
+  onClose,
+  tournamentTitle,
+  tournamentId,
+}) => {
+  const [teamName, setTeamName] = useState("");
+
+  const [players, setPlayers] = useState(
+    Array.from({ length: 5 }, () => ({
+      name: "",
+      ign: "",
+      gameId: "",
+    }))
+  );
+
+  const handlePlayerChange = (
+    index,
+    field,
+    value
+  ) => {
+    const updatedPlayers = [...players];
+
+    updatedPlayers[index] = {
+      ...updatedPlayers[index],
+      [field]: value,
+    };
+
+    setPlayers(updatedPlayers);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        teamName,
+        teamLogo: "",
+        players,
+      };
+
+      const res = await api.post(
+        `/registrations/${tournamentId}`,
+        payload
+      );
+
+      alert(res.data.message);
+
+      setTeamName("");
+
+      setPlayers(
+        Array.from({ length: 5 }, () => ({
+          name: "",
+          ign: "",
+          gameId: "",
+        }))
+      );
+
+      onClose();
+    } catch (error) {
+      console.log(error);
+
+      alert(
+        error.response?.data?.message ||
+          "Registration Failed"
+      );
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -20,11 +87,13 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
       fullWidth
       PaperProps={{
         style: {
-          background: "linear-gradient(180deg, #0B0F1A 0%, #10131F 100%)",
+          background:
+            "linear-gradient(180deg, #0B0F1A 0%, #10131F 100%)",
           borderRadius: "20px",
           border: "1px solid #06B6D4",
           color: "white",
-          boxShadow: "0 0 30px rgba(6,182,212,0.3)",
+          boxShadow:
+            "0 0 30px rgba(6,182,212,0.3)",
         },
       }}
     >
@@ -38,11 +107,16 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          borderBottom:
+            "1px solid rgba(255,255,255,0.1)",
         }}
       >
         Register for {tournamentTitle}
-        <IconButton onClick={onClose} sx={{ color: "#06B6D4" }}>
+
+        <IconButton
+          onClick={onClose}
+          sx={{ color: "#06B6D4" }}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -63,8 +137,14 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
           <TextField
             label="Team Name"
             fullWidth
+            value={teamName}
+            onChange={(e) =>
+              setTeamName(e.target.value)
+            }
             variant="outlined"
-            InputLabelProps={{ style: { color: "#aaa" } }}
+            InputLabelProps={{
+              style: { color: "#aaa" },
+            }}
             InputProps={{
               style: {
                 color: "white",
@@ -74,7 +154,7 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
             }}
           />
 
-          {/* ---- Players Grid (exact 3 columns layout, full width) ---- */}
+          {/* ---- Players Grid ---- */}
           <Grid
             container
             rowSpacing={2}
@@ -86,12 +166,29 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
           >
             {[1, 2, 3, 4, 5].map((num) => (
               <React.Fragment key={num}>
-                <Grid item xs={12} sm={4} sx={{ flexGrow: 1 }}>
+                <Grid
+                  item
+                  xs={12}
+                  sm={4}
+                  sx={{ flexGrow: 1 }}
+                >
                   <TextField
                     label={`Player ${num} Name`}
                     fullWidth
+                    value={
+                      players[num - 1].name
+                    }
+                    onChange={(e) =>
+                      handlePlayerChange(
+                        num - 1,
+                        "name",
+                        e.target.value
+                      )
+                    }
                     variant="outlined"
-                    InputLabelProps={{ style: { color: "#aaa" } }}
+                    InputLabelProps={{
+                      style: { color: "#aaa" },
+                    }}
                     InputProps={{
                       style: {
                         color: "white",
@@ -101,12 +198,30 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={4} sx={{ flexGrow: 1 }}>
+
+                <Grid
+                  item
+                  xs={12}
+                  sm={4}
+                  sx={{ flexGrow: 1 }}
+                >
                   <TextField
                     label={`Player ${num} IGN`}
                     fullWidth
+                    value={
+                      players[num - 1].ign
+                    }
+                    onChange={(e) =>
+                      handlePlayerChange(
+                        num - 1,
+                        "ign",
+                        e.target.value
+                      )
+                    }
                     variant="outlined"
-                    InputLabelProps={{ style: { color: "#aaa" } }}
+                    InputLabelProps={{
+                      style: { color: "#aaa" },
+                    }}
                     InputProps={{
                       style: {
                         color: "white",
@@ -116,13 +231,31 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={4} sx={{ flexGrow: 1 }}>
+
+                <Grid
+                  item
+                  xs={12}
+                  sm={4}
+                  sx={{ flexGrow: 1 }}
+                >
                   <TextField
                     label={`Player ${num} ID`}
                     type="number"
                     fullWidth
+                    value={
+                      players[num - 1].gameId
+                    }
+                    onChange={(e) =>
+                      handlePlayerChange(
+                        num - 1,
+                        "gameId",
+                        e.target.value
+                      )
+                    }
                     variant="outlined"
-                    InputLabelProps={{ style: { color: "#aaa" } }}
+                    InputLabelProps={{
+                      style: { color: "#aaa" },
+                    }}
                     InputProps={{
                       style: {
                         color: "white",
@@ -135,7 +268,8 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
                             display: "none",
                           },
                         "& input[type=number]": {
-                          MozAppearance: "textfield",
+                          MozAppearance:
+                            "textfield",
                         },
                       },
                     }}
@@ -149,11 +283,13 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent:
+                "space-between",
               alignItems: "center",
               mt: 1,
               pt: 2,
-              borderTop: "1px solid rgba(255,255,255,0.1)",
+              borderTop:
+                "1px solid rgba(255,255,255,0.1)",
             }}
           >
             <Button
@@ -176,6 +312,7 @@ const RegisterDialog = ({ open, onClose, tournamentTitle }) => {
 
             <Button
               variant="contained"
+              onClick={handleSubmit}
               sx={{
                 background: "#06B6D4",
                 color: "white",

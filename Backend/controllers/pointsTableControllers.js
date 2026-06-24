@@ -1,25 +1,25 @@
 const PointsTable = require("../models/PointsTable");
-const Tournament = require("../models/Tournament");
-const TeamRegistration = require("../models/TeamRegistration");
 
 const createPointsEntry = async (req, res) => {
   try {
     const {
       tournament,
       team,
+      group,
       placementPoints,
       finishPoints,
       chickenDinners,
     } = req.body;
 
     const totalPoints =
-      placementPoints +
-      finishPoints +
-      chickenDinners;
+      Number(placementPoints) +
+      Number(finishPoints) +
+      Number(chickenDinners);
 
     const pointsEntry = await PointsTable.create({
       tournament,
       team,
+      group,
       placementPoints,
       finishPoints,
       chickenDinners,
@@ -42,13 +42,25 @@ const getTournamentLeaderboard = async (req, res) => {
     const leaderboard = await PointsTable.find({
       tournament: req.params.tournamentId,
     })
-      .populate("team", "teamName")
-      .sort({ totalPoints: -1 });
+      .populate("team", "teamName teamLogo")
+      .sort({
+        totalPoints: -1,
+        chickenDinners: -1,
+      });
+
+    const groupedData = {
+      A: leaderboard.filter((team) => team.group === "A"),
+      B: leaderboard.filter((team) => team.group === "B"),
+      C: leaderboard.filter((team) => team.group === "C"),
+      D: leaderboard.filter((team) => team.group === "D"),
+      SF1: leaderboard.filter((team) => team.group === "SF1"),
+      SF2: leaderboard.filter((team) => team.group === "SF2"),
+      FINAL: leaderboard.filter((team) => team.group === "FINAL"),
+    };
 
     res.status(200).json({
       success: true,
-      count: leaderboard.length,
-      leaderboard,
+      groupedData,
     });
   } catch (error) {
     res.status(500).json({
@@ -66,9 +78,9 @@ const updatePointsEntry = async (req, res) => {
     } = req.body;
 
     const totalPoints =
-      placementPoints +
-      finishPoints +
-      chickenDinners;
+      Number(placementPoints) +
+      Number(finishPoints) +
+      Number(chickenDinners);
 
     const pointsEntry = await PointsTable.findByIdAndUpdate(
       req.params.id,
@@ -81,7 +93,7 @@ const updatePointsEntry = async (req, res) => {
       {
         new: true,
       }
-    );
+    ).populate("team", "teamName");
 
     if (!pointsEntry) {
       return res.status(404).json({
