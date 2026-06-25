@@ -4,6 +4,7 @@ const {
   createMVPEntry,
   getTournamentMVP,
   updateMVPEntry,
+  deleteMVPEntry,
 } = require("../controllers/mvpController");
 
 const {
@@ -13,7 +14,9 @@ const {
 
 const router = express.Router();
 
-// Admin creates MVP entry
+// ============================
+// Create Player (Admin)
+// ============================
 router.post(
   "/",
   protect,
@@ -21,18 +24,32 @@ router.post(
   createMVPEntry
 );
 
-// Get MVP leaderboard of tournament
+// ============================
+// Get Tournament Leaderboard
+// ============================
 router.get(
   "/:tournamentId",
   getTournamentMVP
 );
 
-// Admin updates MVP
+// ============================
+// Update Player
+// ============================
 router.put(
   "/:id",
   protect,
   admin,
   updateMVPEntry
+);
+
+// ============================
+// Delete Player
+// ============================
+router.delete(
+  "/:id",
+  protect,
+  admin,
+  deleteMVPEntry
 );
 
 module.exports = router;
