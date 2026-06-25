@@ -147,12 +147,21 @@ const YourTournament = () => {
                 >
                   Leaderboard
                 </button>
-                <button
-                  onClick={() => navigate(`/points-table/${t._id}`)}
-                  className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition"
-                >
-                  Points Table
-                </button>
+                {t.eventType === "tdm" ? (
+                  <button
+                    onClick={() => navigate(`/tdm-bracket/${t._id}`)}
+                    className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition"
+                  >
+                    Fixture
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => navigate(`/points-table/${t._id}`)}
+                    className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition"
+                  >
+                    Points Table
+                  </button>
+                )}
               </div>
             </div>
           ))}

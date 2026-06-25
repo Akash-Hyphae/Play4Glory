@@ -11,6 +11,7 @@ import Create from "./Pages/Create";
 import Leaderboard from "./Pages/Leaderboard";
 import IdPass from "./Pages/IDPass";
 import Login from "./Pages/Login/index";
+import TDMBracket from "./Pages/TDMBracket/index";
 
 function App() {
   return (
@@ -25,13 +26,11 @@ function App() {
           element={<PrizeDistribution />}
         />
         <Route path="/id-pass" exact={true} element={<IdPass />} />
-        <Route
-  path="/points-table/:tournamentId"
-  element={<PointsTable />}
-/>
+        <Route path="/points-table/:tournamentId" element={<PointsTable />} />
         <Route path="/host" exact={true} element={<Host />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/tdm-bracket/:tournamentId" element={<TDMBracket />} />
       </Routes>
     </BrowserRouter>
   );

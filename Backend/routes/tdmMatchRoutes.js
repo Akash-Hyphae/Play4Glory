@@ -4,6 +4,7 @@ const {
   createMatch,
   getTournamentMatches,
   declareWinner,
+  generateBracket,
 } = require("../controllers/tdmMatchController");
 
 const {
@@ -13,7 +14,19 @@ const {
 
 const router = express.Router();
 
-// Admin creates match
+// ======================================
+// Generate Complete Knockout Bracket
+// ======================================
+router.post(
+  "/generate/:tournamentId",
+  protect,
+  admin,
+  generateBracket
+);
+
+// ======================================
+// Create Single Match (Optional)
+// ======================================
 router.post(
   "/",
   protect,
@@ -21,13 +34,17 @@ router.post(
   createMatch
 );
 
-// Get bracket of tournament
+// ======================================
+// Get Tournament Bracket
+// ======================================
 router.get(
   "/:tournamentId",
   getTournamentMatches
 );
 
-// Admin declares winner
+// ======================================
+// Declare Winner
+// ======================================
 router.put(
   "/winner/:matchId",
   protect,
