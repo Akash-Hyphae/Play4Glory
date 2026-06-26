@@ -8,9 +8,9 @@ const createOrder = async (req, res) => {
   try {
     const { amount } = req.body;
 
-    if (!amount || amount <= 0) {
+    if (amount < 10 || amount > 100000) {
       return res.status(400).json({
-        message: "Invalid Amount",
+        message: "Amount should be between ₹10 and ₹100000",
       });
     }
 
@@ -41,36 +41,28 @@ const createOrder = async (req, res) => {
 
 const verifyPayment = async (req, res) => {
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = req.body;
+    console.log("BODY:", req.body);
+    console.log("USER:", req.user);
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body;
 
     const generatedSignature = crypto
-      .createHmac(
-        "sha256",
-        process.env.RAZORPAY_KEY_SECRET
-      )
-      .update(
-        razorpay_order_id +
-          "|" +
-          razorpay_payment_id
-      )
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(razorpay_order_id + "|" + razorpay_payment_id)
       .digest("hex");
 
-    if (
-      generatedSignature !==
-      razorpay_signature
-    ) {
+    if (generatedSignature !== razorpay_signature) {
       return res.status(400).json({
         message: "Payment Verification Failed",
       });
     }
 
     const payment = await Payment.findOne({
+      
       razorpayOrderId: razorpay_order_id,
     });
+
+    console.log("Payment:", payment);
 
     if (!payment) {
       return res.status(404).json({
@@ -84,18 +76,14 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    if (
-      payment.user.toString() !==
-      req.user._id.toString()
-    ) {
+    if (payment.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "Unauthorized Payment Access",
       });
     }
 
-    const user = await User.findById(
-      req.user._id
-    );
+    const user = await User.findById(req.user._id);
+    console.log("User:", user);
 
     user.walletBalance += payment.amount;
 
@@ -118,11 +106,15 @@ const verifyPayment = async (req, res) => {
       message: "Payment Verified",
       walletBalance: user.walletBalance,
     });
-  } catch (error) {
+  } catch(error){
+
+    console.log(error);
+
     res.status(500).json({
-      message: error.message,
+        message:error.message
     });
-  }
+
+}
 };
 
 module.exports = {

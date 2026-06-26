@@ -19,6 +19,9 @@ import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/Home/SignupPage";
 import { useEffect } from "react";
 import ProfilePage from "./Pages/Profile";
+import WalletHistory from "./Pages/WalletHistory";
+import Withdraw from "./Pages/Withdraw";
+import AddMoney from "./Pages/AddMoney";
 
 function App() {
   return (
@@ -38,6 +41,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/wallet-history" element={<WalletHistory />} />
+        <Route path="/withdraw" element={<Withdraw />} />
+        <Route path="/add-money" element={<AddMoney />} />
       </Routes>
     </BrowserRouter>
   );

@@ -137,17 +137,40 @@ export default function ProfilePage() {
 
               <div className="flex gap-4">
                 <button
-                  className="px-5 py-2 rounded-lg border border-cyan-400 text-cyan-300
-                  hover:bg-cyan-400 hover:text-black transition shadow-[0_0_10px_cyan]"
+                  onClick={() => navigate("/add-money")}
+                  className="
+        px-5 py-2
+        rounded-lg
+        border
+        border-cyan-400
+        text-cyan-300
+        hover:bg-cyan-400
+        hover:text-black
+        transition
+    "
                 >
                   Add Money
                 </button>
 
                 <button
-                  className="px-5 py-2 rounded-lg border border-cyan-400 text-cyan-300
-                  hover:bg-cyan-400 hover:text-black transition"
+                  onClick={() => navigate("/withdraw")}
+                  className="
+    px-5 py-2
+    rounded-lg
+    border
+    border-cyan-400
+    text-cyan-300
+    hover:bg-cyan-400
+    hover:text-black
+"
                 >
                   Withdraw
+                </button>
+                <button
+                  onClick={() => navigate("/wallet-history")}
+                  className="px-5 py-2 rounded-lg border border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-blacktransition"
+                >
+                  Wallet History
                 </button>
               </div>
             </div>
