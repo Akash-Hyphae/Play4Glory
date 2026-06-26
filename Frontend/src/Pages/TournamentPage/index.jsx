@@ -30,10 +30,11 @@ const TournamentPage = () => {
   }, []);
 
   const filteredTournaments = tournaments.filter(
-    (t) =>
-      (filter === "all" || t.tournamentType.toLowerCase() === filter) &&
-      t.title.toLowerCase().includes(search.toLowerCase()),
-  );
+  (t) =>
+    t.eventType?.toLowerCase() === "tournament" &&
+    (filter === "all" || t.tournamentType.toLowerCase() === filter) &&
+    t.title.toLowerCase().includes(search.toLowerCase())
+);
 
   if (loading) {
     return (
