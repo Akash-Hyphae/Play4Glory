@@ -78,7 +78,8 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    localStorage.removeItem("user"); // if you store it
+    navigate("/login", { replace: true });
   };
 
   return (
