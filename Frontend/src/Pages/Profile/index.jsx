@@ -78,9 +78,8 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user"); // if you store it
-    navigate("/login", { replace: true });
-  };
+    navigate("/login");
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#020617] via-[#020617] to-[#031225] text-white px-6 py-10">

@@ -22,7 +22,6 @@ import ProfilePage from "./Pages/Profile";
 import WalletHistory from "./Pages/WalletHistory";
 import Withdraw from "./Pages/Withdraw";
 import AddMoney from "./Pages/AddMoney";
-import ProtectedRoute from "./Components/ProductRoute/index";
 
 function App() {
   return (
@@ -41,38 +40,10 @@ function App() {
         <Route path="/live" exact={true} element={<LivePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/wallet-history"
-          element={
-            <ProtectedRoute>
-              <WalletHistory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/withdraw"
-          element={
-            <ProtectedRoute>
-              <Withdraw />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/add-money"
-          element={
-            <ProtectedRoute>
-              <AddMoney />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/wallet-history" element={<WalletHistory />} />
+        <Route path="/withdraw" element={<Withdraw />} />
+        <Route path="/add-money" element={<AddMoney />} />
       </Routes>
     </BrowserRouter>
   );
