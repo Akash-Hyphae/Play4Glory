@@ -1,39 +1,53 @@
-import React, { useState } from "react";
-import { Box, TextField, Button, Typography, IconButton, Divider } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  IconButton,
+  Divider,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CloseIcon from "@mui/icons-material/Close";
 import api from "../../Api/axios";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    const token = localStorage.getItem("playerToken");
+
+    if (token) {
+      navigate("/profile", { replace: true });
+    }
+  }, [navigate]);
+
   const submit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const res = await api.post("/users/login", {
-      email,
-      password,
-    });
+    try {
+      const res = await api.post("/users/login", {
+        email,
+        password,
+      });
 
-    localStorage.setItem(
-      "playerToken",
-      res.data.token
-    );
+      localStorage.setItem("playerToken", res.data.token);
 
-    localStorage.setItem(
-      "playerName",
-      res.data.displayName
-    );
+      localStorage.setItem(
+        "playerName",
+        res.data.user.displayName
+      );
 
-    navigate("/");
-  } catch (error) {
-    console.log(error.response?.data);
-    alert(error.response?.data?.message || "Login Failed");
-  }
-};
+      navigate("/profile", { replace: true });
+    } catch (error) {
+      console.log(error.response?.data);
+
+      alert(error.response?.data?.message || "Login Failed");
+    }
+  };
 
   return (
     <Box
@@ -62,113 +76,125 @@ const LoginPage = () => {
           overflow: "hidden",
         }}
       >
-        {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-          <Typography sx={{ color: "#06B6D4", fontSize: 28, fontWeight: 800 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 3,
+          }}
+        >
+          <Typography
+            sx={{
+              color: "#06B6D4",
+              fontSize: 28,
+              fontWeight: 800,
+            }}
+          >
             Welcome Back
           </Typography>
+
           <IconButton
             size="small"
-            onClick={() => console.log("close (optional)")}
             sx={{
               color: "#06B6D4",
               border: "1px solid rgba(6,182,212,0.15)",
-              "&:hover": { background: "rgba(6,182,212,0.06)" },
             }}
           >
             <CloseIcon />
           </IconButton>
         </Box>
 
-        {/* subtitle */}
-        <Typography sx={{ color: "rgba(255,255,255,0.75)", mb: 3 }}>
+        <Typography
+          sx={{
+            color: "rgba(255,255,255,0.75)",
+            mb: 3,
+          }}
+        >
           Sign in to access tournaments, scrims and live events.
         </Typography>
 
-        {/* inputs */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
           <TextField
             label="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             fullWidth
             variant="filled"
-            InputLabelProps={{ style: { color: "#9ca3af" } }}
-            InputProps={{
-              disableUnderline: true,
-              sx: {
-                background: "#0f1720",
-                color: "white",
-                borderRadius: "10px",
-                px: 1.5,
-                py: 0.6,
-                "& .MuiFilledInput-input": { padding: "14px 8px" },
-              },
-            }}
-          />
-          <TextField
-            label="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            fullWidth
-            variant="filled"
-            InputLabelProps={{ style: { color: "#9ca3af" } }}
-            InputProps={{
-              disableUnderline: true,
-              sx: {
-                background: "#0f1720",
-                color: "white",
-                borderRadius: "10px",
-                px: 1.5,
-                py: 0.6,
-                "& .MuiFilledInput-input": { padding: "14px 8px" },
-              },
-            }}
           />
 
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1 }}>
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            fullWidth
+            variant="filled"
+          />
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              mt: 1,
+            }}
+          >
             <Button
               variant="contained"
               type="submit"
-              sx={{
-                background: "#06B6D4",
-                color: "#001219",
-                fontWeight: 700,
-                px: 4,
-                py: 1.1,
-                borderRadius: "10px",
-                "&:hover": { background: "#0891b2" },
-                boxShadow: "0 8px 28px rgba(6,182,212,0.12)",
-              }}
             >
               Sign In
             </Button>
 
             <Button
-              onClick={() => navigate("/signup")}
               variant="outlined"
-              sx={{
-                color: "#06B6D4",
-                borderColor: "rgba(6,182,212,0.12)",
-                textTransform: "none",
-              }}
+              onClick={() => navigate("/signup")}
             >
               Create account
             </Button>
           </Box>
         </Box>
 
-        <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.04)" }} />
+        <Divider sx={{ my: 3 }} />
 
-        <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: 13 }}>
+        <Typography
+          sx={{
+            color: "rgba(255,255,255,.6)",
+          }}
+        >
           Or sign in with
         </Typography>
-        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-          <Button sx={{ flex: 1, color: "#fff", background: "#1f2937", "&:hover": { background: "#111827" } }}>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            mt: 2,
+          }}
+        >
+          <Button
+            sx={{
+              flex: 1,
+              color: "#fff",
+              background: "#1f2937",
+            }}
+          >
             Google
           </Button>
-          <Button sx={{ flex: 1, color: "#fff", background: "#1f2937", "&:hover": { background: "#111827" } }}>
+
+          <Button
+            sx={{
+              flex: 1,
+              color: "#fff",
+              background: "#1f2937",
+            }}
+          >
             Phone no.
           </Button>
         </Box>

@@ -6,9 +6,19 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import api from "../../../Api/axios";
+import { useEffect } from "react";
 
 const SignupPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+  const token = localStorage.getItem("playerToken");
+
+  if (token) {
+    navigate("/profile", { replace: true });
+  }
+}, [navigate]);
+
   const [form, setForm] = useState({
     name: "",
     email: "",

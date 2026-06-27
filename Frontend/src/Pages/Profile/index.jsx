@@ -22,18 +22,18 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
+        // const token = localStorage.getItem("token");
 
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
+        // const config = {
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //   },
+        // };
 
         const [profileRes, walletRes, registrationRes] = await Promise.all([
-          api.get("/users/profile", config),
-          api.get("/users/wallet", config),
-          api.get("/users/my-registrations", config),
+          api.get("/users/profile"),
+          api.get("/users/wallet"),
+          api.get("/users/my-registrations"),
         ]);
 
         setProfile(profileRes.data.user);
@@ -44,12 +44,16 @@ export default function ProfilePage() {
           totalWithdraw: walletRes.data.totalWithdraw,
         });
 
+        localStorage.setItem("walletBalance", walletRes.data.walletBalance);
+
         setMatches(registrationRes.data.registrations);
       } catch (error) {
         console.log(error);
 
         if (error.response?.status === 401) {
-          localStorage.removeItem("token");
+          localStorage.removeItem("playerToken");
+          localStorage.removeItem("playerName");
+          navigate("/login", { replace: true });
           navigate("/login");
         }
       } finally {
@@ -77,9 +81,10 @@ export default function ProfilePage() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-};
+    localStorage.removeItem("playerToken");
+    localStorage.removeItem("playerName");
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#020617] via-[#020617] to-[#031225] text-white px-6 py-10">

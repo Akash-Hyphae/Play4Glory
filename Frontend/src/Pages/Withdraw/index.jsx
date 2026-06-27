@@ -14,13 +14,13 @@ const Withdraw = () => {
 
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token");
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
+  // const config = {
+  //   headers: {
+  //     Authorization: `Bearer ${token}`,
+  //   },
+  // };
 
   // ===============================
   // Fetch Wallet + Requests
@@ -29,8 +29,8 @@ const Withdraw = () => {
   const fetchData = async () => {
     try {
       const [walletRes, requestRes] = await Promise.all([
-        api.get("/users/wallet", config),
-        api.get("/withdraw/my-requests", config),
+        api.get("/users/wallet"),
+        api.get("/withdraw/my-requests"),
       ]);
 
       setWalletBalance(walletRes.data.walletBalance);
@@ -61,14 +61,10 @@ const Withdraw = () => {
     }
 
     try {
-      await api.post(
-        "/withdraw",
-        {
-          amount: Number(amount),
-          upiId,
-        },
-        config,
-      );
+      await api.post("/withdraw", {
+        amount: Number(amount),
+        upiId,
+      });
 
       alert("Withdraw request submitted successfully.");
 
@@ -79,7 +75,11 @@ const Withdraw = () => {
     } catch (error) {
       console.log(error);
 
-      alert(error.response?.data?.message || "Unable to submit request");
+      if (error.response?.status === 401) {
+        localStorage.removeItem("playerToken");
+        localStorage.removeItem("playerName");
+        window.location.href = "/login";
+      }
     }
   };
 

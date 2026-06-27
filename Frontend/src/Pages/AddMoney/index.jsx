@@ -11,13 +11,13 @@ const AddMoney = () => {
 
   const quickAmounts = [100, 200, 500, 1000, 2000, 5000];
 
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token");
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
+  // const config = {
+  //   headers: {
+  //     Authorization: `Bearer ${token}`,
+  //   },
+  // };
 
   const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -33,13 +33,9 @@ const AddMoney = () => {
     setLoading(true);
 
     try {
-      const res = await api.post(
-        "/payment/create-order",
-        {
-          amount: Number(amount),
-        },
-        config,
-      );
+      const res = await api.post("/payment/create-order", {
+        amount: Number(amount),
+      });
 
       const order = res.data.order;
 

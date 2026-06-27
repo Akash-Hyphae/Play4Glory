@@ -6,8 +6,10 @@ import { Wallet } from "lucide-react";
 const Header = () => {
   const location = useLocation();
 
-  // 🔹 Example auth state (replace with real auth later)
-  const isLoggedIn = !!localStorage.getItem("playerToken");
+  // Login State
+  const isLoggedIn = Boolean(localStorage.getItem("playerToken"));
+
+  // Wallet Balance
   const walletBalance = localStorage.getItem("walletBalance") || "0";
 
   const navItems = [
@@ -22,17 +24,16 @@ const Header = () => {
   return (
     <header className="bg-[#0B1220] border-b border-[#00E5FF] sticky top-0 z-50">
       <div className="header py-2">
-        <div className="container flex items-center justify-between relative">
+        <div className="container flex items-center justify-between">
+
           {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/">
-              <img
-                src="/logofinal.png"
-                alt="play4glory"
-                className="w-36 h-10 pl-10"
-              />
-            </Link>
-          </div>
+          <Link to="/">
+            <img
+              src="/logofinal.png"
+              alt="Play4Glory"
+              className="w-36 h-10 pl-10"
+            />
+          </Link>
 
           {/* Navigation */}
           <nav className="flex items-center gap-4 pr-5">
@@ -49,12 +50,12 @@ const Header = () => {
                         backgroundColor: "transparent !important",
                       },
                     }}
-                    className={`!text-[#E0F7FA] !capitalize font-semibold transition-all duration-300 ease-in-out hover:!text-[#00E5FF]
-                      ${
-                        isActive
-                          ? "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-[#06B6D4]"
-                          : "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-[#06B6D4] hover:after:w-full"
-                      }`}
+                    className={`!text-[#E0F7FA] !capitalize font-semibold hover:!text-[#00E5FF]
+                    ${
+                      isActive
+                        ? "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-cyan-400"
+                        : "after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-cyan-400 hover:after:w-full after:transition-all"
+                    }`}
                   >
                     {item.name}
                   </Button>
@@ -62,45 +63,52 @@ const Header = () => {
               );
             })}
 
-            {/* 🔹 If NOT logged in → show Login & Signup */}
+            {/* Not Logged In */}
             {!isLoggedIn && (
               <>
                 <Link to="/login">
-                  <Button className="!capitalize font-semibold px-4 py-2 rounded-lg transition-all duration-300 !bg-[#06B6D4] hover:!bg-[#0891B2] !text-white">
+                  <Button
+                    className="!bg-cyan-500 hover:!bg-cyan-600 !text-white !capitalize"
+                  >
                     Login
                   </Button>
                 </Link>
 
                 <Link to="/signup">
-                  <Button className="!capitalize font-semibold px-4 py-2 rounded-lg transition-all duration-300 !bg-[#06B6D4] hover:!bg-[#0891B2] !text-white">
-                    SignUp
+                  <Button
+                    className="!bg-cyan-500 hover:!bg-cyan-600 !text-white !capitalize"
+                  >
+                    Signup
                   </Button>
                 </Link>
               </>
             )}
 
-            {/* 🔹 If logged in → show Wallet + Circular Profile */}
+            {/* Logged In */}
             {isLoggedIn && (
               <div className="flex items-center gap-4 ml-4">
+
                 {/* Wallet */}
-                <div className="flex items-center gap-2 bg-[#2C2F33] px-3 py-1 rounded-lg border border-[#06B6D4]">
-                  <Wallet size={18} className="text-[#06B6D4]" />
+                <div className="flex items-center gap-2 bg-[#1E293B] border border-cyan-500 rounded-lg px-3 py-2">
+                  <Wallet size={18} className="text-cyan-400" />
                   <span className="text-white font-semibold">
                     ₹{walletBalance}
                   </span>
                 </div>
 
-                {/* Circular Profile Image */}
+                {/* Profile */}
                 <Link to="/profile">
                   <img
-                    src="avatar.jpg"
-                    alt="profile"
-                    className="w-10 h-10 rounded-full border-2 border-cyan-500 hover:scale-105 transition-transform cursor-pointer"
+                    src="/avatar.jpg"
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full border-2 border-cyan-500 hover:scale-105 transition"
                   />
                 </Link>
+
               </div>
             )}
           </nav>
+
         </div>
       </div>
     </header>
