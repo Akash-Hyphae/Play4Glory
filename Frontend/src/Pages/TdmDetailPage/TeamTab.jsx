@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "../../api/axios";
+import api from "../../Api/axios";
 
 const TeamTab = ({ tournamentId }) => {
   const [teams, setTeams] = useState([]);

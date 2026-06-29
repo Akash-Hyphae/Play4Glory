@@ -1,4 +1,3 @@
-// src/components/TournamentSection/ScrimCard.jsx
 import React from "react";
 
 const ScrimCard = ({ slot }) => {

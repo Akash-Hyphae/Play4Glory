@@ -1,6 +1,6 @@
 import { Box, Typography, Card } from "@mui/material";
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
+import api from "../../Api/axios";
 
 const mapColors = {
   Erangel: "#00e5ff",

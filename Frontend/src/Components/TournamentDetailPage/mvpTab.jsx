@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "../../api/axios";
+import api from "../../Api/axios";
 
 const MVPTable = ({ tournament }) => {
   const [players, setPlayers] = useState([]);

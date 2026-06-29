@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import api from "../../api/axios";
+import api from "../../Api/axios";
 import { useEffect } from "react";
 import TournamentCard from "../TournamentCard";
 import TournamentTabs from "../TournamentTabs";
