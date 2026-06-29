@@ -8,7 +8,7 @@ import LeaderBoardTab from "./leaderboardTab";
 import MVPTable from "./mvpTab";
 import TeamsTab from "./teamsTab";
 import { useEffect } from "react";
-import api from "../../api/axios";
+import api from "../../Api/axios";
 
 const TournamentDetailPage = () => {
   const { id } = useParams();

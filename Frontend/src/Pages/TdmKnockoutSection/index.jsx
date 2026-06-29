@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import api from "../../api/axios";
+import api from "../../Api/axios";
 import { useNavigate } from "react-router-dom";
 import { FaMedal } from "react-icons/fa";
 import RegisterDialog from "../../Components/RegisterDialog";
