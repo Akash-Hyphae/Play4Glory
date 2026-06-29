@@ -10,7 +10,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
-import OverviewTab from "./overviewTab";
+import OverviewTab from "./OverviewTab";
 import ScheduleTab from "./ScheduleTab";
 import LeaderboardTab from "./LeaderboardTab";
 import LiveTab from "./LiveTab";
