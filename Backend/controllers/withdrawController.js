@@ -1,6 +1,6 @@
 const WithdrawRequest = require("../models/WithdrawRequest");
 const WalletTransaction = require("../models/walletTransaction");
-const User = require("../models/User");
+const User = require("../models/user");
 
 const createWithdrawRequest = async (req, res) => {
   try {

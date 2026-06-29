@@ -1,5 +1,5 @@
 const WalletTransaction = require("../models/walletTransaction");
-const User = require("../models/User");
+const User = require("../models/user");
 
 const getWalletHistory = async (req, res) => {
   try {

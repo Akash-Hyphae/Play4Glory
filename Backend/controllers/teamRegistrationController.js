@@ -1,6 +1,6 @@
 const TeamRegistration = require("../models/TeamRegistration");
 const Tournament = require("../models/Tournament");
-const User = require("../models/User");
+const User = require("../models/user");
 const WalletTransaction = require("../models/walletTransaction");
 const PointsTable = require("../models/PointsTable");
 
