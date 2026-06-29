@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const connectDB = require("./config/db");
+const connectDB = require("./Config/db");
 const userRoutes = require("./routes/userRoutes");
 const tournamentRoutes = require("./routes/tournamentRoutes");
 const walletRoutes = require("./routes/walletRoutes");
