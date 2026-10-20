@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FaWallet } from "react-icons/fa";
 import api from "../../Api/axios";
 import { useNavigate } from "react-router-dom";
+import RoomCredentialsModal from "../../Components/RoomCredentialModal"
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -16,20 +17,15 @@ export default function ProfilePage() {
   });
 
   const [matches, setMatches] = useState([]);
-
   const [loading, setLoading] = useState(true);
+
+  // Modal State
+  const [selectedTournament, setSelectedTournament] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // const token = localStorage.getItem("token");
-
-        // const config = {
-        //   headers: {
-        //     Authorization: `Bearer ${token}`,
-        //   },
-        // };
-
         const [profileRes, walletRes, registrationRes] = await Promise.all([
           api.get("/users/profile"),
           api.get("/users/wallet"),
@@ -45,8 +41,7 @@ export default function ProfilePage() {
         });
 
         localStorage.setItem("walletBalance", walletRes.data.walletBalance);
-
-        setMatches(registrationRes.data.registrations);
+        setMatches(registrationRes.data.registrations || []);
       } catch (error) {
         console.log(error);
 
@@ -54,7 +49,6 @@ export default function ProfilePage() {
           localStorage.removeItem("playerToken");
           localStorage.removeItem("playerName");
           navigate("/login", { replace: true });
-          navigate("/login");
         }
       } finally {
         setLoading(false);
@@ -84,6 +78,11 @@ export default function ProfilePage() {
     localStorage.removeItem("playerToken");
     localStorage.removeItem("playerName");
     navigate("/login", { replace: true });
+  };
+
+  const handleOpenRoomModal = (tournament) => {
+    setSelectedTournament(tournament);
+    setOpenModal(true);
   };
 
   return (
@@ -143,37 +142,21 @@ export default function ProfilePage() {
               <div className="flex gap-4">
                 <button
                   onClick={() => navigate("/add-money")}
-                  className="
-        px-5 py-2
-        rounded-lg
-        border
-        border-cyan-400
-        text-cyan-300
-        hover:bg-cyan-400
-        hover:text-black
-        transition
-    "
+                  className="px-5 py-2 rounded-lg border border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black transition"
                 >
                   Add Money
                 </button>
 
                 <button
                   onClick={() => navigate("/withdraw")}
-                  className="
-    px-5 py-2
-    rounded-lg
-    border
-    border-cyan-400
-    text-cyan-300
-    hover:bg-cyan-400
-    hover:text-black
-"
+                  className="px-5 py-2 rounded-lg border border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black transition"
                 >
                   Withdraw
                 </button>
+
                 <button
                   onClick={() => navigate("/wallet-history")}
-                  className="px-5 py-2 rounded-lg border border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-blacktransition"
+                  className="px-5 py-2 rounded-lg border border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black transition"
                 >
                   Wallet History
                 </button>
@@ -213,12 +196,12 @@ export default function ProfilePage() {
                     <th className="p-3 text-left">Tournament</th>
                     <th className="p-3 text-left">Type</th>
                     <th className="p-3 text-left">Date</th>
-                    <th className="p-3 text-left">Time</th>
+                    <th className="p-3 text-center">Room Pass</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {matches.map((registration, i) => (
+                  {matches.map((registration) => (
                     <tr
                       key={registration._id}
                       className="border-t border-gray-700 hover:bg-cyan-500/5 transition"
@@ -232,18 +215,18 @@ export default function ProfilePage() {
                       </td>
 
                       <td className="p-3 text-gray-400">
-                        {new Date(
-                          registration.tournament?.startTime,
-                        ).toLocaleDateString()}
+                        {registration.tournament?.startTime
+                          ? new Date(registration.tournament.startTime).toLocaleDateString()
+                          : "N/A"}
                       </td>
 
-                      <td className="p-3 text-gray-400">
-                        {new Date(
-                          registration.tournament?.startTime,
-                        ).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() => handleOpenRoomModal(registration.tournament)}
+                          className="px-3 py-1 rounded-md border border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black text-xs font-semibold transition"
+                        >
+                          View Pass
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -253,11 +236,23 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* MODAL */}
+      {selectedTournament && (
+        <RoomCredentialsModal
+          open={openModal}
+          onClose={() => {
+            setOpenModal(false);
+            setSelectedTournament(null);
+          }}
+          tournamentId={selectedTournament._id}
+          tournamentTitle={selectedTournament.title}
+        />
+      )}
     </div>
   );
 }
 
-/* 🔹 Stat Card */
 function StatCard({ title, value }) {
   return (
     <div

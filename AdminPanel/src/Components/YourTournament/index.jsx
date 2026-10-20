@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-
 import api from "../../Api/axios";
 import { useNavigate } from "react-router-dom";
-import { FaMedal, FaStar } from "react-icons/fa";
 import { FaTimes } from "react-icons/fa";
 
 const YourTournament = () => {
@@ -12,7 +10,7 @@ const YourTournament = () => {
 
   // POPUP STATES
   const [showPopup, setShowPopup] = useState(false);
-  // const [selectedTournament, setSelectedTournament] = useState(null);
+  const [selectedTournament, setSelectedTournament] = useState(null);
 
   const [youtubeLink, setYoutubeLink] = useState("");
   const [thumbnail, setThumbnail] = useState(null);
@@ -23,7 +21,6 @@ const YourTournament = () => {
     const fetchTournaments = async () => {
       try {
         const res = await api.get("/tournaments/my-tournaments");
-
         setTournaments(res.data.tournaments);
       } catch (error) {
         console.log(error);
@@ -42,6 +39,7 @@ const YourTournament = () => {
   // CLOSE POPUP
   const handleClosePopup = () => {
     setShowPopup(false);
+    setSelectedTournament(null);
     setYoutubeLink("");
     setThumbnail(null);
   };
@@ -53,7 +51,6 @@ const YourTournament = () => {
     console.log("Thumbnail:", thumbnail);
 
     alert("Youtube Link Added Successfully!");
-
     handleClosePopup();
   };
 
@@ -105,18 +102,16 @@ const YourTournament = () => {
                 {t.title}
               </h3>
               <div className="text-sm text-gray-300 mb-4">
-                <span className="mr-4 text-cyan-200">Date:</span> {t.date}
+                <span className="mr-4 text-cyan-200">Date:</span> {t.startTime ? new Date(t.startTime).toLocaleDateString() : t.date}
                 <span className="mx-4 text-cyan-200">| Prizepool:</span>{" "}
-                {t.prizepool}
+                ₹{t.entryFee && t.maxSlots ? Math.floor(t.entryFee * t.maxSlots * 0.8) : t.prizepool || 0}
                 <span className="mx-4 text-cyan-200">| Entry Fee:</span>{" "}
-                {t.entry}
+                ₹{t.entryFee || t.entry || 0}
               </div>
 
               <div className="flex flex-wrap gap-4 text-sm mb-4">
                 <span className="text-cyan-300">Game: {t.game}</span>
-
                 <span className="text-green-400">Type: {t.tournamentType}</span>
-
                 <span className="text-yellow-400">Status: {t.status}</span>
               </div>
 
@@ -124,7 +119,7 @@ const YourTournament = () => {
                 <div
                   className="absolute top-0 left-0 h-full bg-[#06B6D4]"
                   style={{
-                    width: `${(t.filledSlots / t.maxSlots) * 100}%`,
+                    width: `${t.maxSlots ? (t.filledSlots / t.maxSlots) * 100 : 0}%`,
                   }}
                 />
               </div>
@@ -166,96 +161,93 @@ const YourTournament = () => {
             </div>
           ))}
         </div>
+
         {/* Sticky Create Tournament Button */}
         <div className="fixed bottom-6 right-6 z-50">
           <button
             onClick={() => navigate("/create")}
             className="
-            px-6 py-3 
-            bg-gradient-to-r from-cyan-500 to-blue-500 
-          text-black font-semibold rounded-xl 
-            shadow-[0_0_15px_#06b6d4aa] 
-            transition-all duration-300 
-            hover:scale-105 
-            hover:shadow-[0_0_30px_#06b6d4ff]
-          hover:from-cyan-400 hover:to-blue-400
-          "
+              px-6 py-3 
+              bg-gradient-to-r from-cyan-500 to-blue-500 
+              text-black font-semibold rounded-xl 
+              shadow-[0_0_15px_#06b6d4aa] 
+              transition-all duration-300 
+              hover:scale-105 
+              hover:shadow-[0_0_30px_#06b6d4ff]
+              hover:from-cyan-400 hover:to-blue-400
+            "
           >
             + Create Tournament
           </button>
-
-          {/* POPUP MODAL */}
-          {showPopup && (
-            <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 px-4">
-              <div className="w-full max-w-lg bg-[#10131f] border border-cyan-600 rounded-2xl p-6 relative shadow-[0_0_25px_#00ffff44]">
-                {/* Close Button */}
-                <button
-                  onClick={handleClosePopup}
-                  className="absolute top-4 right-4 text-white hover:text-red-400 text-xl"
-                >
-                  <FaTimes />
-                </button>
-
-                {/* Heading */}
-                <h2 className="text-2xl font-bold text-cyan-400 mb-6">
-                  Add Youtube Link
-                </h2>
-
-                {/* Tournament Name */}
-                <div className="mb-4">
-                  <p className="text-gray-400 text-sm mb-1">Tournament</p>
-
-                  <div className="bg-[#1a2033] px-4 py-3 rounded-lg border border-cyan-700 text-cyan-300">
-                    {selectedTournament?.title}
-                  </div>
-                </div>
-
-                {/* Youtube Link */}
-                <div className="mb-4">
-                  <label className="block text-sm text-gray-300 mb-2">
-                    Youtube Link
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="Paste youtube video link..."
-                    value={youtubeLink}
-                    onChange={(e) => setYoutubeLink(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-[#1a2033] border border-cyan-700 text-white outline-none focus:ring-2 focus:ring-cyan-400"
-                  />
-                </div>
-
-                {/* Thumbnail Upload */}
-                <div className="mb-6">
-                  <label className="block text-sm text-gray-300 mb-2">
-                    Upload Thumbnail
-                  </label>
-
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setThumbnail(e.target.files[0])}
-                    className="w-full text-sm text-gray-300"
-                  />
-
-                  {thumbnail && (
-                    <p className="mt-2 text-cyan-300 text-sm">
-                      Selected: {thumbnail.name}
-                    </p>
-                  )}
-                </div>
-
-                {/* Submit */}
-                <button
-                  onClick={handleSubmit}
-                  className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold transition"
-                >
-                  Submit
-                </button>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* POPUP MODAL */}
+        {showPopup && (
+          <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 px-4">
+            <div className="w-full max-w-lg bg-[#10131f] border border-cyan-600 rounded-2xl p-6 relative shadow-[0_0_25px_#00ffff44]">
+              {/* Close Button */}
+              <button
+                onClick={handleClosePopup}
+                className="absolute top-4 right-4 text-white hover:text-red-400 text-xl"
+              >
+                <FaTimes />
+              </button>
+
+              {/* Heading */}
+              <h2 className="text-2xl font-bold text-cyan-400 mb-6">
+                Add Youtube Link
+              </h2>
+
+              {/* Tournament Name */}
+              <div className="mb-4">
+                <p className="text-gray-400 text-sm mb-1">Tournament</p>
+                <div className="bg-[#1a2033] px-4 py-3 rounded-lg border border-cyan-700 text-cyan-300">
+                  {selectedTournament?.title}
+                </div>
+              </div>
+
+              {/* Youtube Link */}
+              <div className="mb-4">
+                <label className="block text-sm text-gray-300 mb-2">
+                  Youtube Link
+                </label>
+                <input
+                  type="text"
+                  placeholder="Paste youtube video link..."
+                  value={youtubeLink}
+                  onChange={(e) => setYoutubeLink(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-[#1a2033] border border-cyan-700 text-white outline-none focus:ring-2 focus:ring-cyan-400"
+                />
+              </div>
+
+              {/* Thumbnail Upload */}
+              <div className="mb-6">
+                <label className="block text-sm text-gray-300 mb-2">
+                  Upload Thumbnail
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setThumbnail(e.target.files[0])}
+                  className="w-full text-sm text-gray-300"
+                />
+                {thumbnail && (
+                  <p className="mt-2 text-cyan-300 text-sm">
+                    Selected: {thumbnail.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit */}
+              <button
+                onClick={handleSubmit}
+                className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold transition"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

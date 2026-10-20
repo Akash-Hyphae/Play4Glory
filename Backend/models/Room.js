@@ -18,6 +18,11 @@ const roomSchema = new mongoose.Schema(
       required: true,
     },
 
+    group: {
+      type: String,
+      default: "All",
+    },
+
     mapName: {
       type: String,
       default: "Erangel",
@@ -38,7 +43,4 @@ const roomSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model(
-  "Room",
-  roomSchema
-);
+module.exports = mongoose.model("Room", roomSchema);

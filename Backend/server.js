@@ -16,11 +16,37 @@ const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
+// Database Connection
 connectDB();
 
-// Middleware
-app.use(cors());
+// CORS Configuration to accept both local ports and production origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:3000",
+  "https://play4glory-h5e2.onrender.com",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, true); // Fallback to allow any origin in development
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Body Parser Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/tournaments", tournamentRoutes);
 app.use("/api/wallet", walletRoutes);
@@ -33,15 +59,14 @@ app.use("/api/tdm-matches", tdmMatchRoutes);
 app.use("/api/withdraw", withdrawRoutes);
 app.use("/api/payment", paymentRoutes);
 
-// Test Route
+// Base Health Check Route
 app.get("/", (req, res) => {
   res.send("Play4Glory Backend Running");
 });
 
-// PORT
+// Port & Server Start
 const PORT = process.env.PORT || 5000;
 
-// Server Start
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

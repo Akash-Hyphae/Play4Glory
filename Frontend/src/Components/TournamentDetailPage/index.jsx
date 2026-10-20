@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Typography, Button, Card, Chip, Divider } from "@mui/material";
 import { useParams } from "react-router-dom";
 import OverviewTab from "./overviewTab";
@@ -7,7 +7,7 @@ import LiveTab from "./liveTab";
 import LeaderBoardTab from "./leaderboardTab";
 import MVPTable from "./mvpTab";
 import TeamsTab from "./teamsTab";
-import { useEffect } from "react";
+import RoomCredentialsModal from "../RoomCredentialsModal";
 import api from "../../Api/axios";
 
 const TournamentDetailPage = () => {
@@ -16,12 +16,12 @@ const TournamentDetailPage = () => {
   const [calculations, setCalculations] = useState(null);
   const [loading, setLoading] = useState(true);
   const [section, setSection] = useState("overview");
+  const [openRoomModal, setOpenRoomModal] = useState(false);
 
   useEffect(() => {
     const fetchTournament = async () => {
       try {
         const res = await api.get(`/tournaments/${id}`);
-
         setTournament(res.data.tournament);
         setCalculations(res.data.calculations);
       } catch (error) {
@@ -49,6 +49,7 @@ const TournamentDetailPage = () => {
       </Box>
     );
   }
+
   if (!tournament) {
     return (
       <Box
@@ -181,16 +182,35 @@ const TournamentDetailPage = () => {
         </Box>
       </Box>
 
-      {/* ACTION BUTTON */}
+      {/* ACTION BUTTONS */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "flex-end",
           alignItems: "center",
+          gap: 2,
           p: 3,
           pr: 6,
         }}
       >
+        <Button
+          variant="outlined"
+          onClick={() => setOpenRoomModal(true)}
+          sx={{
+            borderColor: "#06B6D4",
+            color: "#06B6D4",
+            textTransform: "none",
+            borderRadius: "10px",
+            fontWeight: 600,
+            "&:hover": {
+              borderColor: "#22D3EE",
+              backgroundColor: "rgba(6,182,212,0.1)",
+            },
+          }}
+        >
+          🔑 View Room Credentials
+        </Button>
+
         {tournament.status === "completed" ? (
           <Button
             variant="contained"
@@ -283,30 +303,28 @@ const TournamentDetailPage = () => {
             p: 3,
           }}
         >
-          {/* OVERVIEW */}
           {section === "overview" && (
             <OverviewTab tournament={tournament} calculations={calculations} />
           )}
-          {/* SCHEDULE */}
           {section === "schedule" && <ScheduleTab tournament={tournament} />}
-
-          {/* LIVE */}
           {section === "live" && <LiveTab tournament={tournament} />}
-
-          {/* LEADERBOARD */}
           {section === "Leaderboard" && (
             <LeaderBoardTab tournament={tournament} />
           )}
-
-          {/* MVP LEADERBOARD */}
           {section === "MVP Leaderboard" && (
             <MVPTable tournament={tournament} />
           )}
-
-          {/* TEAMS */}
           {section === "teams" && <TeamsTab tournament={tournament} />}
         </Card>
       </Box>
+
+      {/* CREDENTIALS MODAL */}
+      <RoomCredentialsModal
+        open={openRoomModal}
+        onClose={() => setOpenRoomModal(false)}
+        tournamentId={tournament._id}
+        tournamentTitle={tournament.title}
+      />
     </Box>
   );
 };

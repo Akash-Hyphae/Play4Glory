@@ -1,76 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaPaperPlane, FaTimes } from "react-icons/fa";
+import api from "../../Api/axios";
 
 const IdPass = () => {
-  // TOURNAMENT DATA
-  const tournaments = [
-    {
-      id: 1,
-      title: "BGMI Battle Rush",
-      mode: "Squad",
-    },
-    {
-      id: 2,
-      title: "BGMI Duo Clash",
-      mode: "Duo",
-    },
-    {
-      id: 3,
-      title: "BGMI Solo Masters",
-      mode: "Solo",
-    },
-    {
-      id: 4,
-      title: "BGMI Royal Cup",
-      mode: "Squad",
-    },
-  ];
+  const [tournaments, setTournaments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // POPUP STATE
   const [showPopup, setShowPopup] = useState(false);
-
   const [selectedTournament, setSelectedTournament] = useState(null);
 
   // FORM STATES
   const [group, setGroup] = useState("Group A");
-
   const [roomId, setRoomId] = useState("");
-
   const [password, setPassword] = useState("");
+  const [mapName, setMapName] = useState("Erangel");
+  const [submitting, setSubmitting] = useState(false);
+
+  // FETCH TOURNAMENTS
+  const fetchTournaments = async () => {
+    try {
+      const res = await api.get("/tournaments/my-tournaments");
+      setTournaments(res.data.tournaments || []);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTournaments();
+  }, []);
 
   // OPEN POPUP
   const handleOpenPopup = (tournament) => {
     setSelectedTournament(tournament);
-
     setShowPopup(true);
   };
 
   // CLOSE POPUP
   const handleClosePopup = () => {
     setShowPopup(false);
-
     setRoomId("");
-
     setPassword("");
-
     setGroup("Group A");
+    setMapName("Erangel");
   };
 
-  // SEND ID PASS
-  const handleSend = () => {
-    const data = {
-      tournament: selectedTournament?.title,
-      mode: selectedTournament?.mode,
-      group,
-      roomId,
-      password,
-    };
+  // SEND ID PASS TO BACKEND
+  const handleSend = async () => {
+    if (!roomId || !password) {
+      return alert("Please enter both Room ID and Password");
+    }
 
-    console.log(data);
+    try {
+      setSubmitting(true);
+      await api.post("/rooms", {
+        tournament: selectedTournament._id,
+        roomId: roomId.trim(),
+        roomPassword: password.trim(),
+        group,
+        mapName,
+        published: true,
+      });
 
-    alert("ID & Password Sent Successfully!");
-
-    handleClosePopup();
+      alert(`Room ID & Password published for ${selectedTournament.title}!`);
+      handleClosePopup();
+    } catch (error) {
+      console.log(error);
+      alert(error.response?.data?.message || "Failed to publish Room details");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -90,52 +92,49 @@ const IdPass = () => {
 
         {/* TABLE */}
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            {/* HEADER */}
-            <thead>
-              <tr className="bg-[#1a2438] text-cyan-400 text-[15px]">
-                <th className="py-4 px-4 text-left">#</th>
-
-                <th className="py-4 px-4 text-left">Tournament Title</th>
-
-                <th className="py-4 px-4 text-center">Mode</th>
-
-                <th className="py-4 px-4 text-center">Action</th>
-              </tr>
-            </thead>
-
-            {/* BODY */}
-            <tbody>
-              {tournaments.map((tournament, index) => (
-                <tr key={tournament.id} className="border-b border-[#26314d]">
-                  {/* INDEX */}
-                  <td className="py-4 px-4 text-[16px] font-bold">
-                    {index + 1}
-                  </td>
-
-                  {/* TITLE */}
-                  <td className="py-4 px-4 text-[16px] font-semibold">
-                    {tournament.title}
-                  </td>
-
-                  {/* MODE */}
-                  <td className="py-4 px-4 text-center text-[15px]">
-                    {tournament.mode}
-                  </td>
-
-                  {/* BUTTON */}
-                  <td className="py-4 px-4 text-center">
-                    <button
-                      onClick={() => handleOpenPopup(tournament)}
-                      className="px-4 py-2 rounded-lg border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-black transition text-sm font-medium"
-                    >
-                      ID Pass
-                    </button>
-                  </td>
+          {loading ? (
+            <p className="text-center py-8 text-cyan-400">Loading tournaments...</p>
+          ) : tournaments.length === 0 ? (
+            <p className="text-center py-8 text-gray-400">No tournaments found.</p>
+          ) : (
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-[#1a2438] text-cyan-400 text-[15px]">
+                  <th className="py-4 px-4 text-left">#</th>
+                  <th className="py-4 px-4 text-left">Tournament Title</th>
+                  <th className="py-4 px-4 text-center">Mode</th>
+                  <th className="py-4 px-4 text-center">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {tournaments.map((tournament, index) => (
+                  <tr key={tournament._id} className="border-b border-[#26314d]">
+                    <td className="py-4 px-4 text-[16px] font-bold">
+                      {index + 1}
+                    </td>
+
+                    <td className="py-4 px-4 text-[16px] font-semibold">
+                      {tournament.title}
+                    </td>
+
+                    <td className="py-4 px-4 text-center text-[15px]">
+                      {tournament.tournamentType}
+                    </td>
+
+                    <td className="py-4 px-4 text-center">
+                      <button
+                        onClick={() => handleOpenPopup(tournament)}
+                        className="px-4 py-2 rounded-lg border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-black transition text-sm font-medium"
+                      >
+                        Publish ID Pass
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -143,7 +142,6 @@ const IdPass = () => {
       {showPopup && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
           <div className="w-full max-w-md bg-[#0b1020] border border-cyan-700 rounded-2xl p-5 relative shadow-[0_0_25px_#00ffff30]">
-            {/* CLOSE BUTTON */}
             <button
               onClick={handleClosePopup}
               className="absolute top-4 right-4 text-gray-400 hover:text-red-400"
@@ -151,7 +149,6 @@ const IdPass = () => {
               <FaTimes />
             </button>
 
-            {/* HEADING */}
             <h2 className="text-xl font-bold text-cyan-400 mb-1">
               Send ID & Password
             </h2>
@@ -169,7 +166,7 @@ const IdPass = () => {
               <select
                 value={group}
                 onChange={(e) => setGroup(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg bg-[#121826] border border-cyan-700 outline-none text-sm"
+                className="w-full px-4 py-3 rounded-lg bg-[#121826] border border-cyan-700 outline-none text-sm text-white"
               >
                 <option>Group A</option>
                 <option>Group B</option>
@@ -178,6 +175,26 @@ const IdPass = () => {
                 <option>Semifinal-1</option>
                 <option>Semifinal-2</option>
                 <option>Final</option>
+                <option>All</option>
+              </select>
+            </div>
+
+            {/* MAP NAME */}
+            <div className="mb-4">
+              <label className="block text-sm mb-2 text-gray-300">
+                Map Name
+              </label>
+              <select
+                value={mapName}
+                onChange={(e) => setMapName(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg bg-[#121826] border border-cyan-700 outline-none text-sm text-white"
+              >
+                <option>Erangel</option>
+                <option>Miramar</option>
+                <option>Sanhok</option>
+                <option>Rondo</option>
+                <option>Vikendi</option>
+                <option>TDM Warehouse</option>
               </select>
             </div>
 
@@ -192,7 +209,7 @@ const IdPass = () => {
                 placeholder="Enter Room ID"
                 value={roomId}
                 onChange={(e) => setRoomId(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg bg-[#121826] border border-cyan-700 outline-none text-sm"
+                className="w-full px-4 py-3 rounded-lg bg-[#121826] border border-cyan-700 outline-none text-sm text-white"
               />
             </div>
 
@@ -207,17 +224,18 @@ const IdPass = () => {
                 placeholder="Enter Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg bg-[#121826] border border-cyan-700 outline-none text-sm"
+                className="w-full px-4 py-3 rounded-lg bg-[#121826] border border-cyan-700 outline-none text-sm text-white"
               />
             </div>
 
             {/* SEND BUTTON */}
             <button
               onClick={handleSend}
-              className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold transition flex items-center justify-center gap-2"
+              disabled={submitting}
+              className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <FaPaperPlane />
-              Send
+              {submitting ? "Publishing..." : "Send & Publish"}
             </button>
           </div>
         </div>

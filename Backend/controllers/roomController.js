@@ -7,20 +7,31 @@ const createRoom = async (req, res) => {
       tournament,
       roomId,
       roomPassword,
-      mapName,
-      roundNumber,
+      group = "All",
+      mapName = "Erangel",
+      roundNumber = 1,
+      published = true,
     } = req.body;
+
+    if (!tournament || !roomId || !roomPassword) {
+      return res.status(400).json({
+        message: "Tournament ID, Room ID, and Room Password are required",
+      });
+    }
 
     const room = await Room.create({
       tournament,
       roomId,
       roomPassword,
+      group,
       mapName,
       roundNumber,
+      published,
     });
 
     res.status(201).json({
       success: true,
+      message: "Room credentials saved and published successfully",
       room,
     });
   } catch (error) {
@@ -34,7 +45,7 @@ const getTournamentRooms = async (req, res) => {
   try {
     const rooms = await Room.find({
       tournament: req.params.tournamentId,
-    });
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -80,23 +91,21 @@ const publishRoom = async (req, res) => {
 
 const getMyRoomPass = async (req, res) => {
   try {
-    const registration =
-      await TeamRegistration.findOne({
-        tournament: req.params.tournamentId,
-        registeredBy: req.user._id,
-      });
+    const registration = await TeamRegistration.findOne({
+      tournament: req.params.tournamentId,
+      registeredBy: req.user._id,
+    });
 
     if (!registration) {
       return res.status(403).json({
-        message:
-          "You are not registered in this tournament",
+        message: "You are not registered in this tournament",
       });
     }
 
     const rooms = await Room.find({
       tournament: req.params.tournamentId,
       published: true,
-    });
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
