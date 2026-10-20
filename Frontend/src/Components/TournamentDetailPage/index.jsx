@@ -7,7 +7,7 @@ import LiveTab from "./liveTab";
 import LeaderBoardTab from "./leaderboardTab";
 import MVPTable from "./mvpTab";
 import TeamsTab from "./teamsTab";
-import RoomCredentialsModal from "../RoomCredentialsModal";
+import RoomCredentialsModal from "../RoomCredentialModal"
 import api from "../../Api/axios";
 
 const TournamentDetailPage = () => {
