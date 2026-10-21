@@ -1,5 +1,6 @@
 const Room = require("../models/Room");
 const TeamRegistration = require("../models/TeamRegistration");
+const Tournament = require("../models/Tournament");
 
 const createRoom = async (req, res) => {
   try {
@@ -91,24 +92,49 @@ const publishRoom = async (req, res) => {
 
 const getMyRoomPass = async (req, res) => {
   try {
-    const registration = await TeamRegistration.findOne({
-      tournament: req.params.tournamentId,
-      registeredBy: req.user._id,
+    const { tournamentId } = req.params;
+
+    // Check if tournament exists
+    const tournament = await Tournament.findById(tournamentId);
+
+    if (!tournament) {
+      return res.status(404).json({
+        message: "Tournament Not Found",
+      });
+    }
+
+    // Check if user is registered via TeamRegistration (as captain or team member)
+    const teamReg = await TeamRegistration.findOne({
+      tournament: tournamentId,
+      $or: [
+        { registeredBy: req.user._id },
+        { "players.gameId": req.user.inGameId },
+      ],
     });
 
-    if (!registration) {
+    // Check if user is in tournament direct participants array (solo/duo joins)
+    const isParticipant =
+      tournament.participants &&
+      tournament.participants.some(
+        (id) => id.toString() === req.user._id.toString()
+      );
+
+    // Block access only if user is completely unregistered
+    if (!teamReg && !isParticipant) {
       return res.status(403).json({
         message: "You are not registered in this tournament",
       });
     }
 
+    // Fetch all published rooms for this tournament
     const rooms = await Room.find({
-      tournament: req.params.tournamentId,
+      tournament: tournamentId,
       published: true,
     }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
+      count: rooms.length,
       rooms,
     });
   } catch (error) {
