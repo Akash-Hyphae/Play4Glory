@@ -11,21 +11,25 @@ const roomSchema = new mongoose.Schema(
     roomId: {
       type: String,
       required: true,
+      trim: true,
     },
 
     roomPassword: {
       type: String,
       required: true,
+      trim: true,
     },
 
     group: {
       type: String,
       default: "All",
+      trim: true,
     },
 
     mapName: {
       type: String,
       default: "Erangel",
+      trim: true,
     },
 
     roundNumber: {

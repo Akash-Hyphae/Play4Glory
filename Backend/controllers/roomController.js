@@ -11,7 +11,6 @@ const createRoom = async (req, res) => {
       group = "All",
       mapName = "Erangel",
       roundNumber = 1,
-      published = true,
     } = req.body;
 
     if (!tournament || !roomId || !roomPassword) {
@@ -20,14 +19,15 @@ const createRoom = async (req, res) => {
       });
     }
 
+    // Force published to true directly on creation
     const room = await Room.create({
       tournament,
-      roomId,
-      roomPassword,
+      roomId: String(roomId).trim(),
+      roomPassword: String(roomPassword).trim(),
       group,
       mapName,
-      roundNumber,
-      published,
+      roundNumber: Number(roundNumber) || 1,
+      published: true,
     });
 
     res.status(201).json({
@@ -94,7 +94,6 @@ const getMyRoomPass = async (req, res) => {
   try {
     const { tournamentId } = req.params;
 
-    // Check if tournament exists
     const tournament = await Tournament.findById(tournamentId);
 
     if (!tournament) {
@@ -103,30 +102,27 @@ const getMyRoomPass = async (req, res) => {
       });
     }
 
-    // Check if user is registered via TeamRegistration (as captain or team member)
+    // Check if user registered the team
     const teamReg = await TeamRegistration.findOne({
       tournament: tournamentId,
-      $or: [
-        { registeredBy: req.user._id },
-        { "players.gameId": req.user.inGameId },
-      ],
+      registeredBy: req.user._id,
     });
 
-    // Check if user is in tournament direct participants array (solo/duo joins)
+    // Check if user is in tournament direct participants array
     const isParticipant =
-      tournament.participants &&
+      Array.isArray(tournament.participants) &&
       tournament.participants.some(
         (id) => id.toString() === req.user._id.toString()
       );
 
-    // Block access only if user is completely unregistered
+    // Block only if completely unregistered
     if (!teamReg && !isParticipant) {
       return res.status(403).json({
         message: "You are not registered in this tournament",
       });
     }
 
-    // Fetch all published rooms for this tournament
+    // Fetch published rooms for this tournament
     const rooms = await Room.find({
       tournament: tournamentId,
       published: true,
