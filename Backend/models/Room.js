@@ -35,7 +35,7 @@ const roomSchema = new mongoose.Schema(
 
     published: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {
