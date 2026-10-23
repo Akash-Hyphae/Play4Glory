@@ -13,26 +13,29 @@ const YourTournament = () => {
   const [selectedTournament, setSelectedTournament] = useState(null);
 
   const [youtubeLink, setYoutubeLink] = useState("");
-  const [thumbnail, setThumbnail] = useState(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const [tournaments, setTournaments] = useState([]);
 
-  useEffect(() => {
-    const fetchTournaments = async () => {
-      try {
-        const res = await api.get("/tournaments/my-tournaments");
-        setTournaments(res.data.tournaments);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  const fetchTournaments = async () => {
+    try {
+      const res = await api.get("/tournaments/my-tournaments");
+      setTournaments(res.data.tournaments || []);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  useEffect(() => {
     fetchTournaments();
   }, []);
 
   // OPEN POPUP
   const handleOpenPopup = (tournament) => {
     setSelectedTournament(tournament);
+    setYoutubeLink(tournament.liveStreamUrl || "");
+    setThumbnailUrl(tournament.liveStreamThumbnail || "");
     setShowPopup(true);
   };
 
@@ -41,17 +44,32 @@ const YourTournament = () => {
     setShowPopup(false);
     setSelectedTournament(null);
     setYoutubeLink("");
-    setThumbnail(null);
+    setThumbnailUrl("");
   };
 
   // SUBMIT
-  const handleSubmit = () => {
-    console.log("Tournament:", selectedTournament);
-    console.log("Youtube Link:", youtubeLink);
-    console.log("Thumbnail:", thumbnail);
+  const handleSubmit = async () => {
+    if (!selectedTournament) return;
+    if (!youtubeLink.trim()) {
+      return alert("Please paste a valid YouTube link");
+    }
 
-    alert("Youtube Link Added Successfully!");
-    handleClosePopup();
+    try {
+      setSubmitting(true);
+      await api.put(`/tournaments/stream/${selectedTournament._id}`, {
+        liveStreamUrl: youtubeLink.trim(),
+        liveStreamThumbnail: thumbnailUrl.trim(),
+      });
+
+      alert("YouTube Link and Details Updated Successfully!");
+      handleClosePopup();
+      fetchTournaments();
+    } catch (error) {
+      console.log(error);
+      alert(error.response?.data?.message || "Failed to update stream");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const filteredTournaments = tournaments.filter(
@@ -98,11 +116,20 @@ const YourTournament = () => {
               key={t._id}
               className="bg-[#10131f] border border-cyan-700 rounded-2xl p-6 shadow-[0_0_20px_#00ffff22] hover:shadow-[0_0_25px_#00ffff55] transition-all duration-300"
             >
-              <h3 className="text-2xl font-bold text-cyan-300 mb-1">
-                {t.title}
-              </h3>
+              <div className="flex justify-between items-start">
+                <h3 className="text-2xl font-bold text-cyan-300 mb-1">
+                  {t.title}
+                </h3>
+                {t.liveStreamUrl && (
+                  <span className="bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-md animate-pulse">
+                    ● STREAM LINKED
+                  </span>
+                )}
+              </div>
+
               <div className="text-sm text-gray-300 mb-4">
-                <span className="mr-4 text-cyan-200">Date:</span> {t.startTime ? new Date(t.startTime).toLocaleDateString() : t.date}
+                <span className="mr-4 text-cyan-200">Date:</span>{" "}
+                {t.startTime ? new Date(t.startTime).toLocaleDateString() : t.date}
                 <span className="mx-4 text-cyan-200">| Prizepool:</span>{" "}
                 ₹{t.entryFee && t.maxSlots ? Math.floor(t.entryFee * t.maxSlots * 0.8) : t.prizepool || 0}
                 <span className="mx-4 text-cyan-200">| Entry Fee:</span>{" "}
@@ -134,7 +161,7 @@ const YourTournament = () => {
                   onClick={() => handleOpenPopup(t)}
                   className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition"
                 >
-                  Add Youtube Link
+                  {t.liveStreamUrl ? "Edit YouTube Link" : "Add Youtube Link"}
                 </button>
                 <button
                   onClick={() => navigate("/leaderboard", { state: t })}
@@ -195,13 +222,13 @@ const YourTournament = () => {
 
               {/* Heading */}
               <h2 className="text-2xl font-bold text-cyan-400 mb-6">
-                Add Youtube Link
+                Add YouTube Live Stream
               </h2>
 
               {/* Tournament Name */}
               <div className="mb-4">
                 <p className="text-gray-400 text-sm mb-1">Tournament</p>
-                <div className="bg-[#1a2033] px-4 py-3 rounded-lg border border-cyan-700 text-cyan-300">
+                <div className="bg-[#1a2033] px-4 py-3 rounded-lg border border-cyan-700 text-cyan-300 font-semibold">
                   {selectedTournament?.title}
                 </div>
               </div>
@@ -209,41 +236,41 @@ const YourTournament = () => {
               {/* Youtube Link */}
               <div className="mb-4">
                 <label className="block text-sm text-gray-300 mb-2">
-                  Youtube Link
+                  YouTube Video / Stream Link
                 </label>
                 <input
                   type="text"
-                  placeholder="Paste youtube video link..."
+                  placeholder="https://www.youtube.com/watch?v=..."
                   value={youtubeLink}
                   onChange={(e) => setYoutubeLink(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg bg-[#1a2033] border border-cyan-700 text-white outline-none focus:ring-2 focus:ring-cyan-400"
                 />
               </div>
 
-              {/* Thumbnail Upload */}
+              {/* Thumbnail URL */}
               <div className="mb-6">
                 <label className="block text-sm text-gray-300 mb-2">
-                  Upload Thumbnail
+                  Custom Thumbnail Image URL (Optional)
                 </label>
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setThumbnail(e.target.files[0])}
-                  className="w-full text-sm text-gray-300"
+                  type="text"
+                  placeholder="Paste direct image link..."
+                  value={thumbnailUrl}
+                  onChange={(e) => setThumbnailUrl(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-[#1a2033] border border-cyan-700 text-white outline-none focus:ring-2 focus:ring-cyan-400 text-sm"
                 />
-                {thumbnail && (
-                  <p className="mt-2 text-cyan-300 text-sm">
-                    Selected: {thumbnail.name}
-                  </p>
-                )}
+                <p className="text-xs text-gray-400 mt-1">
+                  If left empty, the tournament's banner image or YouTube thumbnail will be used automatically.
+                </p>
               </div>
 
               {/* Submit */}
               <button
                 onClick={handleSubmit}
-                className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold transition"
+                disabled={submitting}
+                className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold transition disabled:opacity-50"
               >
-                Submit
+                {submitting ? "Saving..." : "Save Stream"}
               </button>
             </div>
           </div>

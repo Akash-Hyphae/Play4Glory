@@ -4,7 +4,7 @@ const WalletTransaction = require("../models/walletTransaction");
 
 const createTournament = async (req, res) => {
   try {
-    const { title,eventType, game, tournamentType, entryFee, maxSlots, startTime } =
+    const { title, eventType, game, tournamentType, entryFee, maxSlots, startTime, bannerImage } =
       req.body;
 
     const tournament = await Tournament.create({
@@ -15,6 +15,7 @@ const createTournament = async (req, res) => {
       entryFee,
       maxSlots,
       startTime,
+      bannerImage: bannerImage || "",
       createdBy: req.user._id,
     });
 
@@ -177,10 +178,52 @@ const getMyTournaments = async (req, res) => {
   }
 };
 
+const updateLiveStream = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { liveStreamUrl, liveStreamThumbnail, status } = req.body;
+
+    const tournament = await Tournament.findById(id);
+
+    if (!tournament) {
+      return res.status(404).json({
+        message: "Tournament not found",
+      });
+    }
+
+    if (liveStreamUrl !== undefined) {
+      tournament.liveStreamUrl = liveStreamUrl.trim();
+    }
+
+    if (liveStreamThumbnail !== undefined) {
+      tournament.liveStreamThumbnail = liveStreamThumbnail.trim();
+    }
+
+    if (status) {
+      tournament.status = status;
+    } else if (tournament.liveStreamUrl && tournament.status === "upcoming") {
+      tournament.status = "live";
+    }
+
+    await tournament.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Live stream details updated successfully",
+      tournament,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createTournament,
   joinTournament,
   getAllTournaments,
   getTournamentById,
   getMyTournaments,
+  updateLiveStream,
 };

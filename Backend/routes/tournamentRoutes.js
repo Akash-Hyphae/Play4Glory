@@ -6,6 +6,7 @@ const {
   getAllTournaments,
   getTournamentById,
   getMyTournaments,
+  updateLiveStream,
 } = require("../controllers/tournamentControllers");
 
 const {
@@ -24,10 +25,23 @@ router.get(
   getMyTournaments
 );
 
-
 router.get("/:id", getTournamentById);
 
+router.put(
+  "/stream/:id",
+  protect,
+  admin,
+  updateLiveStream
+);
+
 // Create Tournament (Admin Only)
+router.post(
+  " fantasy",
+  protect,
+  admin,
+  createTournament
+);
+
 router.post(
   "/",
   protect,

@@ -68,6 +68,16 @@ const tournamentSchema = new mongoose.Schema(
       default: "",
     },
 
+    liveStreamUrl: {
+      type: String,
+      default: "",
+    },
+
+    liveStreamThumbnail: {
+      type: String,
+      default: "",
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
