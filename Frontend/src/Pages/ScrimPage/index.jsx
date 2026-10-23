@@ -1,155 +1,222 @@
-// src/components/ScrimsSection/ScrimsSection.jsx
-import { React, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Navigation, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
+import React, { useState, useEffect } from "react";
+import api from "../../Api/axios";
+import { useNavigate } from "react-router-dom";
 import RegisterDialog from "../../Components/RegisterDialog";
 
-// Each match has its own filled slots out of 16
-const scrimSlots = [
-  {
-    time: "12:00 - 15:00",
-    matches: [
-      { map: "Erangle, Miramar, Rondo", img: "/erangle.png", filled: 12 },
-      { map: "Erangle, Miramar, Rondo", img: "/miramar.png", filled: 9 },
-      { map: "Erangle, Miramar, Rondo", img: "/rondo.jpg", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/erangle.png", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/miramar.png", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/rondo.jpg", filled: 15 },
-    ],
-  },
-  {
-    time: "15:00 - 18:00",
-    matches: [
-      { map: "Erangle, Miramar, Rondo", img: "/erangle.png", filled: 12 },
-      { map: "Erangle, Miramar, Rondo", img: "/miramar.png", filled: 9 },
-      { map: "Erangle, Miramar, Rondo", img: "/rondo.jpg", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/erangle.png", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/miramar.png", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/rondo.jpg", filled: 15 },
-    ],
-  },
-  {
-    time: "18:00 - 21:00",
-    matches: [
-      { map: "Erangle, Miramar, Rondo", img: "/erangle.png", filled: 12 },
-      { map: "Erangle, Miramar, Rondo", img: "/miramar.png", filled: 9 },
-      { map: "Erangle, Miramar, Rondo", img: "/rondo.jpg", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/erangle.png", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/miramar.png", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/rondo.jpg", filled: 15 },
-    ],
-  },
-  {
-    time: "21:00 - 00:00",
-    matches: [
-      { map: "Erangle, Miramar, Rondo", img: "/erangle.png", filled: 12 },
-      { map: "Erangle, Miramar, Rondo", img: "/miramar.png", filled: 9 },
-      { map: "Erangle, Miramar, Rondo", img: "/rondo.jpg", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/erangle.png", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/miramar.png", filled: 15 },
-      { map: "Erangle, Miramar, Rondo", img: "/rondo.jpg", filled: 15 },
-    ],
-  },
-];
+const getMapImage = (game) => {
+  if (game === "Free Fire") return "/rondo.jpg";
+  if (game === "COD Mobile") return "/miramar.png";
+  return "/erangle.png";
+};
 
 const ScrimsSection = () => {
+  const navigate = useNavigate();
+  const [scrims, setScrims] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  // Registration Dialog State
   const [openDialog, setOpenDialog] = useState(false);
+  const [selectedScrim, setSelectedScrim] = useState(null);
+
+  useEffect(() => {
+    const fetchScrims = async () => {
+      try {
+        const res = await api.get("/tournaments");
+        const allTournaments = res.data.tournaments || [];
+        setScrims(
+          allTournaments.filter(
+            (t) => t.eventType?.toLowerCase() === "scrim"
+          )
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchScrims();
+  }, []);
+
+  const handleOpenRegister = (scrim) => {
+    setSelectedScrim(scrim);
+    setOpenDialog(true);
+  };
+
+  const filteredScrims = scrims.filter(
+    (s) =>
+      (filter === "all" || s.tournamentType?.toLowerCase() === filter) &&
+      s.title.toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0B0E16] flex justify-center items-center text-cyan-400 text-2xl font-bold">
+        Loading Live Scrims...
+      </div>
+    );
+  }
 
   return (
-    <section className="py-8 px-6 space-y-10 bg-[#0B0E16] min-h-screen">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-10">
-        <h1 className="text-4xl font-extrabold text-cyan-400 tracking-wide mb-4 md:mb-0">
-          Scrims
-        </h1>
+    <section className="py-8 px-6 space-y-8 bg-[#0B0E16] min-h-screen font-Poppins">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+        <div>
+          <h1 className="text-4xl font-extrabold text-cyan-400 tracking-wide">
+            Live Scrims
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Practice matches & competitive daily lobby slots
+          </p>
+        </div>
       </div>
-      {scrimSlots.map((slot, i) => (
-        <div
-          key={i}
-          className="bg-[#0D101A] rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-[#06B6D4]/30 p-6"
+
+      {/* Search + Filter */}
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <input
+          type="text"
+          placeholder="Search scrims by title..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 px-4 py-3 bg-[#121622] border border-cyan-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-400 outline-none"
+        />
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="w-full md:w-48 px-4 py-3 bg-[#121622] border border-cyan-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-400 outline-none"
         >
-          {/* Time Slot Heading */}
-          <h2 className="text-2xl font-bold text-cyan-400 mb-6 text-center">
-            {slot.time}
-          </h2>
+          <option value="all">All Types</option>
+          <option value="solo">Solo</option>
+          <option value="duo">Duo</option>
+          <option value="squad">Squad</option>
+        </select>
+      </div>
 
-          {/* Swiper Slider */}
-          <Swiper
-            slidesPerView={3}
-            spaceBetween={20}
-            navigation={true}
-            autoplay={{
-              delay: 4000,
-              disableOnInteraction: false,
-            }}
-            modules={[Pagination, Navigation, Autoplay]}
-            className="mySwiper"
-          >
-            {slot.matches.map((match, index) => {
-              const progress = (match.filled / 16) * 100;
-              const color =
-                progress >= 100
-                  ? "#22c55e" // green
-                  : progress >= 10
-                    ? "#06B6D4" // cyan
-                    : "#ef4444"; // red
+      {/* Scrims Grid */}
+      {filteredScrims.length === 0 ? (
+        <div className="bg-[#10131F] border border-cyan-900 rounded-2xl p-12 text-center max-w-lg mx-auto">
+          <h2 className="text-2xl font-bold text-cyan-400 mb-2">No Scrims Available</h2>
+          <p className="text-gray-400 text-sm">
+            There are no active practice scrims scheduled right now. Please check back later.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredScrims.map((scrim) => {
+            const filled = scrim.filledSlots || 0;
+            const max = scrim.maxSlots || 16;
+            const progress = (filled / max) * 100;
+            const isFull = filled >= max;
 
-              return (
-                <SwiperSlide
-                  key={index}
-                  className="bg-[#10131F] rounded-xl overflow-hidden border border-[#06B6D4]/30 hover:border-[#06B6D4]/80 transition group"
-                >
-                  <div className="relative">
-                    <img
-                      src={match.img}
-                      alt={match.map}
-                      className="w-full h-44 object-cover opacity-90 group-hover:opacity-100 transition"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0D101A] to-transparent" />
-                  </div>
+            return (
+              <div
+                key={scrim._id}
+                className="bg-[#10131F] rounded-2xl overflow-hidden border border-cyan-700/50 hover:border-cyan-400 transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.5)] group flex flex-col justify-between"
+              >
+                {/* Banner / Map */}
+                <div className="relative h-44 overflow-hidden">
+                  <img
+                    src={scrim.bannerImage || getMapImage(scrim.game)}
+                    alt={scrim.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#10131F] via-[#10131F]/30 to-transparent" />
+                  <span className="absolute top-3 left-3 bg-cyan-500 text-black text-xs font-bold px-2.5 py-1 rounded-md shadow-md">
+                    {scrim.game}
+                  </span>
+                  <span className="absolute top-3 right-3 bg-black/70 border border-cyan-500/40 text-cyan-300 text-xs font-bold px-2.5 py-1 rounded-md">
+                    {scrim.tournamentType}
+                  </span>
+                </div>
 
-                  <div className="p-4 flex flex-col items-center text-center space-y-2">
-                    <h3 className="text-white text-lg font-semibold">
-                      {match.map}
+                {/* Details */}
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition">
+                      {scrim.title}
                     </h3>
 
-                    {/* Thin slot bar */}
-                    <div className="w-full relative mt-1">
-                      <div className="w-full h-1 bg-[#1B2033] rounded-full overflow-hidden">
-                        <div
-                          className="h-full transition-all duration-700"
-                          style={{
-                            width: `${progress}%`,
-                            background: "#06B6D4",
-                          }}
-                        ></div>
-                      </div>
-                      <span className="absolute right-0 -top-4 text-xs text-gray-400">
-                        {match.filled}/16
+                    <div className="text-xs text-gray-400 mt-2 space-y-1">
+                      <p>
+                        <span className="text-cyan-300">Time:</span>{" "}
+                        {scrim.startTime
+                          ? new Date(scrim.startTime).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "TBD"}
+                      </p>
+                      <p>
+                        <span className="text-cyan-300">Date:</span>{" "}
+                        {scrim.startTime
+                          ? new Date(scrim.startTime).toLocaleDateString()
+                          : "TBD"}
+                      </p>
+                      <p>
+                        <span className="text-cyan-300">Entry Fee:</span>{" "}
+                        {scrim.entryFee === 0 ? "FREE" : `₹${scrim.entryFee}`}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full space-y-1">
+                    <div className="flex justify-between text-xs text-gray-400">
+                      <span>Slots Filled</span>
+                      <span className="font-semibold text-cyan-300">
+                        {filled}/{max}
                       </span>
                     </div>
+                    <div className="w-full h-1.5 bg-[#1B2033] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-cyan-400 transition-all duration-500"
+                        style={{ width: `${Math.min(progress, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => handleOpenRegister(scrim)}
+                      disabled={isFull || scrim.status === "completed"}
+                      className="flex-1 py-2.5 rounded-xl border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-black font-semibold text-sm transition duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {isFull
+                        ? "Slot Full"
+                        : scrim.status === "completed"
+                        ? "Ended"
+                        : "Register Scrim"}
+                    </button>
 
                     <button
-                      onClick={() => setOpenDialog(true)}
-                      className="mt-3 border border-cyan-500 text-cyan-400 rounded-md px-4 py-2 hover:bg-cyan-500 hover:text-black transition"
+                      onClick={() => navigate(`/tournament-details/${scrim._id}`)}
+                      className="px-4 py-2.5 rounded-xl border border-gray-700 hover:border-cyan-400 text-gray-300 hover:text-white text-sm font-semibold transition duration-200"
                     >
-                      Register Scrim
+                      Details
                     </button>
                   </div>
-                </SwiperSlide>
-              );
-            })}
-          </Swiper>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      ))}
-      <RegisterDialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        tournamentTitle={"Scrim Match"}
-      />
-      ;
+      )}
+
+      {/* Real Dynamic Registration Dialog */}
+      {selectedScrim && (
+        <RegisterDialog
+          open={openDialog}
+          onClose={() => {
+            setOpenDialog(false);
+            setSelectedScrim(null);
+          }}
+          tournamentTitle={selectedScrim.title}
+          tournamentId={selectedScrim._id}
+        />
+      )}
     </section>
   );
 };
