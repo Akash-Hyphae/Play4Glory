@@ -13,6 +13,7 @@ const roomRoutes = require("./routes/roomRoutes");
 const tdmMatchRoutes = require("./routes/tdmMatchRoutes");
 const withdrawRoutes = require("./routes/withdrawRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const calculationRoutes = require("./routes/calculationRoutes");
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/tdm-matches", tdmMatchRoutes);
 app.use("/api/withdraw", withdrawRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/calculations", calculationRoutes);
 
 // Base Health Check Route
 app.get("/", (req, res) => {
