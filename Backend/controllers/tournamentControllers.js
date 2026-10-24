@@ -1,6 +1,12 @@
 const Tournament = require("../models/Tournament");
 const User = require("../models/user");
 const WalletTransaction = require("../models/walletTransaction");
+const TeamRegistration = require("../models/TeamRegistration");
+const PointsTable = require("../models/PointsTable");
+const TDMMatch = require("../models/TDMMatch");
+const MVP = require("../models/MVP");
+const Room = require("../models/Room");
+const Schedule = require("../models/Schedule");
 
 const createTournament = async (req, res) => {
   try {
@@ -73,13 +79,10 @@ const joinTournament = async (req, res) => {
     });
 
     tournament.participants.push(req.user._id);
-
     tournament.filledSlots += 1;
-
     await tournament.save();
 
     user.joinedTournaments.push(tournament._id);
-
     await user.save();
 
     res.status(200).json({
@@ -123,26 +126,18 @@ const getTournamentById = async (req, res) => {
     }
 
     const totalCollection = tournament.entryFee * tournament.filledSlots;
-
     const hostAmount = (totalCollection * tournament.hostFeePercent) / 100;
-
-    const platformAmount =
-      (totalCollection * tournament.platformFeePercent) / 100;
-
+    const platformAmount = (totalCollection * tournament.platformFeePercent) / 100;
     const prizePool = totalCollection - hostAmount - platformAmount;
 
     const firstPrize = prizePool * 0.6;
-
     const secondPrize = prizePool * 0.25;
-
     const thirdPrize = prizePool * 0.1;
-
     const mvpPrize = prizePool * 0.05;
 
     res.status(200).json({
       success: true,
       tournament,
-
       calculations: {
         totalCollection,
         hostAmount,
@@ -219,6 +214,56 @@ const updateLiveStream = async (req, res) => {
   }
 };
 
+// CASCADE DELETE TOURNAMENT & ALL LINKED DATA
+const deleteTournament = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+      return res.status(404).json({
+        message: "Tournament not found",
+      });
+    }
+
+    // 1. Delete all team registrations
+    await TeamRegistration.deleteMany({ tournament: id });
+
+    // 2. Remove tournament from all users' joinedTournaments profile list
+    await User.updateMany(
+      { joinedTournaments: id },
+      { $pull: { joinedTournaments: id } }
+    );
+
+    // 3. Delete PointsTable entries
+    await PointsTable.deleteMany({ tournament: id });
+
+    // 4. Delete TDM Matches
+    await TDMMatch.deleteMany({ tournament: id });
+
+    // 5. Delete MVP records
+    await MVP.deleteMany({ tournament: id });
+
+    // 6. Delete Rooms
+    await Room.deleteMany({ tournament: id });
+
+    // 7. Delete Schedules
+    await Schedule.deleteMany({ tournament: id });
+
+    // 8. Delete the Tournament document itself
+    await tournament.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Tournament and all linked registrations successfully deleted.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createTournament,
   joinTournament,
@@ -226,4 +271,5 @@ module.exports = {
   getTournamentById,
   getMyTournaments,
   updateLiveStream,
+  deleteTournament,
 };

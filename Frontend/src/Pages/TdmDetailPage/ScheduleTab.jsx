@@ -2,53 +2,24 @@ import React, { useEffect, useState } from "react";
 import api from "../../Api/axios";
 import { useParams } from "react-router-dom";
 
-const ScheduleTab = () => {
-  const { id } = useParams();
-  const tournamentId = id;
+const ScheduleTab = ({ tournamentId: propTournamentId }) => {
+  const { id: paramId } = useParams();
+  const tournamentId = propTournamentId || paramId;
 
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tournament, setTournament] = useState(null);
 
-  // ===============================
-  // Fetch Bracket
-  // ===============================
-
-  const fetchTournament = async () => {
-    console.log("Fetching tournament");
-
-    try {
-      const res = await api.get(`/tournaments/${tournamentId}`);
-      setTournament(res.data.tournament);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchBracket = async () => {
-    console.log("Fetching bracket");
-    try {
-      const res = await api.get(`/tdm-matches/${tournamentId}`);
-
-      console.log("Bracket API:", res.data);
-
-      setMatches(Array.isArray(res.data.matches) ? res.data.matches : []);
-    } catch (error) {
-      console.log("Bracket Error:", error.response?.data || error);
-      setMatches([]);
-    }
-  };
   useEffect(() => {
-    console.log("Tournament ID:", tournamentId);
     if (!tournamentId) return;
 
     const loadData = async () => {
       setLoading(true);
-
       try {
-        await Promise.all([fetchTournament(), fetchBracket()]);
+        const res = await api.get(`/tdm-matches/${tournamentId}`);
+        setMatches(Array.isArray(res.data.matches) ? res.data.matches : []);
       } catch (error) {
         console.log(error);
+        setMatches([]);
       } finally {
         setLoading(false);
       }
@@ -57,273 +28,162 @@ const ScheduleTab = () => {
     loadData();
   }, [tournamentId]);
 
-  // ===============================
-  // Separate rounds
-  // ===============================
-
-  const round1 = matches.filter((match) => match.round === 1);
-
-  const round2 = matches.filter((match) => match.round === 2);
-
-  const round3 = matches.filter((match) => match.round === 3);
-
-  const quarter = matches.filter((match) => match.round === 4);
-
-  const semi = matches.filter((match) => match.round === 5);
-
-  const final = matches.filter((match) => match.round === 6);
-
-  // ===============================
-  // Loading
-  // ===============================
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050816] flex justify-center items-center">
-        <h1 className="text-3xl text-cyan-400 font-bold animate-pulse">
-          Loading Bracket...
+      <div className="py-20 flex justify-center items-center">
+        <h1 className="text-2xl text-cyan-400 font-bold animate-pulse">
+          Loading Fixture Bracket...
         </h1>
       </div>
     );
   }
-
-  console.log("Tournament:", tournament);
-  console.log("Matches:", matches.length);
-  console.log(matches);
 
   if (matches.length === 0) {
     return (
-      <div className="min-h-screen bg-[#050816] flex justify-center items-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-cyan-400">
-            Bracket Not Generated
-          </h1>
-
-          <p className="mt-3 text-gray-400">
-            Admin has not generated the knockout bracket yet.
-          </p>
-        </div>
+      <div className="py-16 text-center bg-[#0a0f1d] rounded-2xl border border-cyan-900/60 p-8">
+        <h2 className="text-2xl font-bold text-cyan-400">
+          Bracket Not Generated Yet
+        </h2>
+        <p className="mt-2 text-gray-400 text-sm">
+          The match schedule & knockout bracket will appear here as soon as the organizer finalizes team registrations.
+        </p>
       </div>
     );
   }
-  // ===============================
-  // Match Card (User View)
-  // ===============================
 
-  const MatchCard = ({ match }) => (
-    <div
-      className="
-      w-72
-      bg-[#10131f]
-      border
-      border-cyan-700
-      rounded-2xl
-      p-4
-      shadow-[0_0_18px_rgba(0,255,255,.15)]
-      hover:shadow-[0_0_30px_rgba(0,255,255,.30)]
-      transition-all
-      duration-300
-      "
-    >
-      {/* Team A */}
+  // Dynamically group matches by round
+  const groupedRounds = matches.reduce((acc, match) => {
+    acc[match.round] = acc[match.round] || [];
+    acc[match.round].push(match);
+    return acc;
+  }, {});
 
-      <div className="flex justify-between items-center py-2">
-        <span className="font-semibold text-gray-200">
-          {match.teamA?.teamName || "TBD"}
-        </span>
+  const totalRounds = Object.keys(groupedRounds).length;
 
-        {match.winner &&
-          match.teamA &&
-          match.winner._id === match.teamA._id && (
-            <span className="text-green-400 font-bold">✔</span>
-          )}
-      </div>
-
-      <div className="border-b border-cyan-900"></div>
-
-      {/* Team B */}
-
-      <div className="flex justify-between items-center py-2">
-        <span className="font-semibold text-gray-200">
-          {match.teamB?.teamName || "TBD"}
-        </span>
-
-        {match.winner &&
-          match.teamB &&
-          match.winner._id === match.teamB._id && (
-            <span className="text-green-400 font-bold">✔</span>
-          )}
-      </div>
-
-      {/* Winner */}
-
-      {match.winner && (
-        <div className="mt-4 text-center">
-          <span className="text-green-400 font-bold text-lg">
-            🏆 {match.winner.teamName}
-          </span>
-        </div>
-      )}
-
-      {/* Status */}
-
-      <div className="mt-4 text-center">
-        <span
-          className={`text-sm font-bold ${
-            match.status === "completed"
-              ? "text-green-400"
-              : match.status === "live"
-                ? "text-cyan-400"
-                : "text-yellow-400"
-          }`}
-        >
-          {match.status.toUpperCase()}
-        </span>
-      </div>
-
-      {/* Time */}
-
-      {match.matchTime && (
-        <div className="mt-2 text-center text-gray-400 text-xs">
-          {new Date(match.matchTime).toLocaleString()}
-        </div>
-      )}
-    </div>
-  );
+  const getRoundLabel = (roundNum, total) => {
+    const diff = total - roundNum;
+    if (diff === 0) return "FINAL";
+    if (diff === 1) return "Semi Finals";
+    if (diff === 2) return "Quarter Finals";
+    return `Round ${roundNum}`;
+  };
 
   return (
-    <div className="min-h-screen bg-[#050816] text-white p-8 overflow-x-auto">
-      {/* Header */}
-
-      <div className="mb-12">
-        <h1 className="text-5xl font-bold text-cyan-400">
-          {tournament?.title}
-        </h1>
-
-        <p className="text-gray-400 mt-3 text-lg">64 Teams Knockout Bracket</p>
+    <div className="w-full text-white">
+      {/* Title */}
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-cyan-400">Knockout Bracket</h2>
+          <p className="text-gray-400 text-xs mt-1">
+            {matches[0]?.round === 1 ? matches.filter((m) => m.round === 1).length * 2 : 0} Teams Single Elimination
+          </p>
+        </div>
       </div>
 
-      <div className="flex gap-24 items-start min-w-max">
-        {/* ==========================
-              ROUND 1
-        =========================== */}
+      {/* Bracket Columns */}
+      <div className="overflow-x-auto pb-6">
+        <div className="flex gap-8 min-w-max">
+          {Object.entries(groupedRounds).map(([roundNumStr, roundMatches]) => {
+            const roundNum = parseInt(roundNumStr, 10);
+            const isFinal = roundNum === totalRounds;
 
-        <div className="w-72">
-          <h2 className="text-center text-cyan-400 text-2xl font-bold mb-8">
-            Round 1
-          </h2>
+            return (
+              <div key={roundNum} className="w-72 flex flex-col">
+                <h3
+                  className={`text-center font-bold text-lg mb-6 pb-2 border-b ${
+                    isFinal
+                      ? "text-yellow-400 border-yellow-500"
+                      : "text-cyan-400 border-cyan-800"
+                  }`}
+                >
+                  {getRoundLabel(roundNum, totalRounds)}
+                </h3>
 
-          <div className="space-y-8">
-            {round1.map((match) => (
-              <MatchCard key={match._id} match={match} />
-            ))}
-          </div>
-        </div>
+                <div
+                  className="flex flex-col justify-around flex-1"
+                  style={{ gap: `${Math.pow(2, roundNum - 1) * 1.25}rem` }}
+                >
+                  {roundMatches.map((match) => (
+                    <div
+                      key={match._id}
+                      className={`bg-[#10131f] rounded-xl border p-4 shadow-md transition duration-200 ${
+                        isFinal
+                          ? "border-yellow-500/80 shadow-[0_0_15px_rgba(234,179,8,0.2)]"
+                          : "border-cyan-800/80 hover:border-cyan-500"
+                      }`}
+                    >
+                      <div className="text-[11px] text-gray-500 mb-2 flex justify-between">
+                        <span>Match #{match.matchNumber}</span>
+                        <span
+                          className={`font-semibold ${
+                            match.status === "completed"
+                              ? "text-green-400"
+                              : match.status === "live"
+                              ? "text-cyan-400"
+                              : "text-yellow-400"
+                          }`}
+                        >
+                          {match.status.toUpperCase()}
+                        </span>
+                      </div>
 
-        {/* ==========================
-              ROUND 2
-        =========================== */}
+                      {/* Team A */}
+                      <div className="flex justify-between items-center py-1">
+                        <span
+                          className={`text-sm font-semibold truncate max-w-[180px] ${
+                            match.winner?._id === match.teamA?._id
+                              ? "text-green-400 font-bold"
+                              : "text-gray-200"
+                          }`}
+                        >
+                          {match.teamA?.teamName || "TBD"}
+                        </span>
+                        {match.winner && match.teamA && match.winner._id === match.teamA._id && (
+                          <span className="text-green-400 text-xs font-bold">✔</span>
+                        )}
+                      </div>
 
-        <div className="w-72">
-          <h2 className="text-center text-cyan-400 text-2xl font-bold mb-8">
-            Round 2
-          </h2>
+                      <div className="border-b border-gray-800 my-2"></div>
 
-          <div className="space-y-28">
-            {round2.map((match) => (
-              <MatchCard key={match._id} match={match} />
-            ))}
-          </div>
-        </div>
+                      {/* Team B */}
+                      <div className="flex justify-between items-center py-1">
+                        <span
+                          className={`text-sm font-semibold truncate max-w-[180px] ${
+                            match.winner?._id === match.teamB?._id
+                              ? "text-green-400 font-bold"
+                              : "text-gray-200"
+                          }`}
+                        >
+                          {match.teamB?.teamName || "TBD"}
+                        </span>
+                        {match.winner && match.teamB && match.winner._id === match.teamB._id && (
+                          <span className="text-green-400 text-xs font-bold">✔</span>
+                        )}
+                      </div>
 
-        {/* ==========================
-              ROUND 3
-        =========================== */}
+                      {/* Winner Display */}
+                      {match.winner && (
+                        <div className="mt-3 pt-2 border-t border-gray-800 text-center text-xs font-bold text-green-400 truncate">
+                          🏆 {match.winner.teamName}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
 
-        <div className="w-72">
-          <h2 className="text-center text-cyan-400 text-2xl font-bold mb-8">
-            Round 3
-          </h2>
-
-          <div className="space-y-56">
-            {round3.map((match) => (
-              <MatchCard key={match._id} match={match} />
-            ))}
-          </div>
-        </div>
-
-        {/* ==========================
-              QUARTER FINALS
-        =========================== */}
-
-        <div className="w-72">
-          <h2 className="text-center text-cyan-400 text-2xl font-bold mb-8">
-            Quarter Finals
-          </h2>
-
-          <div className="space-y-[30rem]">
-            {quarter.map((match) => (
-              <MatchCard key={match._id} match={match} />
-            ))}
-          </div>
-        </div>
-        {/* ==========================
-              SEMI FINALS
-        =========================== */}
-
-        <div className="w-72">
-          <h2 className="text-center text-cyan-400 text-2xl font-bold mb-8">
-            Semi Finals
-          </h2>
-
-          <div className="space-y-[58rem]">
-            {semi.map((match) => (
-              <MatchCard key={match._id} match={match} />
-            ))}
-          </div>
-        </div>
-
-        {/* ==========================
-                  FINAL
-        =========================== */}
-
-        <div className="w-72 flex flex-col justify-center">
-          <h2 className="text-center text-yellow-400 text-2xl font-bold mb-8">
-            Final
-          </h2>
-
-          {final.length > 0 && <MatchCard match={final[0]} />}
-
-          {/* Champion */}
-
-          {final.length > 0 && final[0].winner && (
-            <div
-              className="
-              mt-12
-              rounded-2xl
-              border-2
-              border-yellow-500
-              bg-[#111827]
-              p-6
-              shadow-[0_0_40px_rgba(255,215,0,.25)]
-              text-center
-              "
-            >
-              <div className="text-5xl mb-3">🏆</div>
-
-              <h2 className="text-yellow-400 text-xl font-bold">Champion</h2>
-
-              <h1 className="mt-3 text-3xl font-extrabold text-green-400">
-                {final[0].winner.teamName}
-              </h1>
-
-              <p className="mt-3 text-gray-400">
-                Winner of
-                <br />
-                {tournament?.title}
-              </p>
-            </div>
-          )}
+                {isFinal && roundMatches[0]?.winner && (
+                  <div className="mt-6 bg-[#111827] border-2 border-yellow-500 rounded-xl p-4 text-center shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+                    <p className="text-yellow-400 font-bold text-xs tracking-wider">
+                      CHAMPION
+                    </p>
+                    <p className="text-xl font-extrabold text-green-400 mt-1 truncate">
+                      {roundMatches[0].winner.teamName}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

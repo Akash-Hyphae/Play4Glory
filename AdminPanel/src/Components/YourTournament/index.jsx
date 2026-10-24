@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import api from "../../Api/axios";
 import { useNavigate } from "react-router-dom";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaTrashAlt } from "react-icons/fa";
 
 const YourTournament = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
-  // POPUP STATES
   const [showPopup, setShowPopup] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState(null);
 
@@ -31,7 +30,6 @@ const YourTournament = () => {
     fetchTournaments();
   }, []);
 
-  // OPEN POPUP
   const handleOpenPopup = (tournament) => {
     setSelectedTournament(tournament);
     setYoutubeLink(tournament.liveStreamUrl || "");
@@ -39,7 +37,6 @@ const YourTournament = () => {
     setShowPopup(true);
   };
 
-  // CLOSE POPUP
   const handleClosePopup = () => {
     setShowPopup(false);
     setSelectedTournament(null);
@@ -47,7 +44,6 @@ const YourTournament = () => {
     setThumbnailUrl("");
   };
 
-  // SUBMIT
   const handleSubmit = async () => {
     if (!selectedTournament) return;
     if (!youtubeLink.trim()) {
@@ -69,6 +65,24 @@ const YourTournament = () => {
       alert(error.response?.data?.message || "Failed to update stream");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // DELETE TOURNAMENT WITH CASCADE CLEANUP
+  const handleDeleteTournament = async (id, title) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${title}"?\n\nWarning: This will permanently delete this tournament, remove all registered teams, and delete it from all player profiles!`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const res = await api.delete(`/tournaments/${id}`);
+      alert(res.data.message || "Tournament deleted successfully!");
+      fetchTournaments();
+    } catch (error) {
+      console.log(error);
+      alert(error.response?.data?.message || "Failed to delete tournament.");
     }
   };
 
@@ -117,17 +131,28 @@ const YourTournament = () => {
               className="bg-[#10131f] border border-cyan-700 rounded-2xl p-6 shadow-[0_0_20px_#00ffff22] hover:shadow-[0_0_25px_#00ffff55] transition-all duration-300"
             >
               <div className="flex justify-between items-start">
-                <h3 className="text-2xl font-bold text-cyan-300 mb-1">
-                  {t.title}
-                </h3>
-                {t.liveStreamUrl && (
-                  <span className="bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-md animate-pulse">
-                    ● STREAM LINKED
-                  </span>
-                )}
+                <div>
+                  <h3 className="text-2xl font-bold text-cyan-300 mb-1">
+                    {t.title}
+                  </h3>
+                  {t.liveStreamUrl && (
+                    <span className="bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-md animate-pulse">
+                      ● STREAM LINKED
+                    </span>
+                  )}
+                </div>
+
+                {/* DELETE ICON BUTTON */}
+                <button
+                  onClick={() => handleDeleteTournament(t._id, t.title)}
+                  title="Delete Tournament"
+                  className="p-2.5 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white transition duration-200 shadow-md cursor-pointer"
+                >
+                  <FaTrashAlt size={16} />
+                </button>
               </div>
 
-              <div className="text-sm text-gray-300 mb-4">
+              <div className="text-sm text-gray-300 mb-4 mt-2">
                 <span className="mr-4 text-cyan-200">Date:</span>{" "}
                 {t.startTime ? new Date(t.startTime).toLocaleDateString() : t.date}
                 <span className="mx-4 text-cyan-200">| Prizepool:</span>{" "}
@@ -155,35 +180,44 @@ const YourTournament = () => {
                 {t.filledSlots}/{t.maxSlots}
               </div>
 
-              {/* Buttons */}
-              <div className="flex gap-4 mt-4">
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-4 mt-4">
                 <button
                   onClick={() => handleOpenPopup(t)}
-                  className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition"
+                  className="flex-1 min-w-[140px] py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition font-semibold text-sm cursor-pointer"
                 >
                   {t.liveStreamUrl ? "Edit YouTube Link" : "Add Youtube Link"}
                 </button>
+
                 <button
                   onClick={() => navigate("/leaderboard", { state: t })}
-                  className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition"
+                  className="flex-1 min-w-[140px] py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition font-semibold text-sm cursor-pointer"
                 >
                   Leaderboard
                 </button>
+
                 {t.eventType === "tdm" ? (
                   <button
                     onClick={() => navigate(`/tdm-bracket/${t._id}`)}
-                    className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition"
+                    className="flex-1 min-w-[140px] py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition font-semibold text-sm cursor-pointer"
                   >
                     Fixture
                   </button>
                 ) : (
                   <button
                     onClick={() => navigate(`/points-table/${t._id}`)}
-                    className="flex-1 py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition"
+                    className="flex-1 min-w-[140px] py-2 border border-cyan-500 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-black transition font-semibold text-sm cursor-pointer"
                   >
                     Points Table
                   </button>
                 )}
+
+                <button
+                  onClick={() => handleDeleteTournament(t._id, t.title)}
+                  className="py-2 px-5 border border-red-500/70 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <FaTrashAlt size={14} /> Delete
+                </button>
               </div>
             </div>
           ))}
@@ -202,6 +236,7 @@ const YourTournament = () => {
               hover:scale-105 
               hover:shadow-[0_0_30px_#06b6d4ff]
               hover:from-cyan-400 hover:to-blue-400
+              cursor-pointer
             "
           >
             + Create Tournament
@@ -212,20 +247,17 @@ const YourTournament = () => {
         {showPopup && (
           <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 px-4">
             <div className="w-full max-w-lg bg-[#10131f] border border-cyan-600 rounded-2xl p-6 relative shadow-[0_0_25px_#00ffff44]">
-              {/* Close Button */}
               <button
                 onClick={handleClosePopup}
-                className="absolute top-4 right-4 text-white hover:text-red-400 text-xl"
+                className="absolute top-4 right-4 text-white hover:text-red-400 text-xl cursor-pointer"
               >
                 <FaTimes />
               </button>
 
-              {/* Heading */}
               <h2 className="text-2xl font-bold text-cyan-400 mb-6">
                 Add YouTube Live Stream
               </h2>
 
-              {/* Tournament Name */}
               <div className="mb-4">
                 <p className="text-gray-400 text-sm mb-1">Tournament</p>
                 <div className="bg-[#1a2033] px-4 py-3 rounded-lg border border-cyan-700 text-cyan-300 font-semibold">
@@ -233,7 +265,6 @@ const YourTournament = () => {
                 </div>
               </div>
 
-              {/* Youtube Link */}
               <div className="mb-4">
                 <label className="block text-sm text-gray-300 mb-2">
                   YouTube Video / Stream Link
@@ -247,7 +278,6 @@ const YourTournament = () => {
                 />
               </div>
 
-              {/* Thumbnail URL */}
               <div className="mb-6">
                 <label className="block text-sm text-gray-300 mb-2">
                   Custom Thumbnail Image URL (Optional)
@@ -264,11 +294,10 @@ const YourTournament = () => {
                 </p>
               </div>
 
-              {/* Submit */}
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold transition disabled:opacity-50"
+                className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold transition disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? "Saving..." : "Save Stream"}
               </button>

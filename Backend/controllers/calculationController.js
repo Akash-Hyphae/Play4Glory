@@ -24,17 +24,16 @@ const getTournamentCalculations = async (req, res) => {
     let winners = { first: null, second: null, third: null, fourth: null, mvp: null };
 
     if (tournament.eventType === "tdm") {
-      // TDM Split: 1st 40%, 2nd 30%, 3rd 20%, 4th 10%
       firstPrize = Math.floor(prizePool * 0.4);
       secondPrize = Math.floor(prizePool * 0.3);
       thirdPrize = Math.floor(prizePool * 0.2);
       fourthPrize = Math.floor(prizePool * 0.1);
       mvpPrize = 0;
 
-      // Find final match
+      // Find final match dynamically (the match that does not have a nextMatch)
       const finalMatch = await TDMMatch.findOne({
         tournament: tournamentId,
-        round: 6,
+        nextMatch: null,
       })
         .populate("winner")
         .populate("teamA")
@@ -48,14 +47,12 @@ const getTournamentCalculations = async (req, res) => {
             : finalMatch.teamA;
       }
     } else {
-      // Standard Tournament/Scrim Split: 1st 60%, 2nd 25%, 3rd 10%, MVP 5%
       firstPrize = Math.floor(prizePool * 0.6);
       secondPrize = Math.floor(prizePool * 0.25);
       thirdPrize = Math.floor(prizePool * 0.1);
       fourthPrize = 0;
       mvpPrize = Math.floor(prizePool * 0.05);
 
-      // Fetch Final group or overall top ranked teams
       const finalStandings = await PointsTable.find({
         tournament: tournamentId,
         group: "FINAL",
@@ -80,7 +77,6 @@ const getTournamentCalculations = async (req, res) => {
       if (standings[1]) winners.second = standings[1].team;
       if (standings[2]) winners.third = standings[2].team;
 
-      // Top MVP Player
       const topMvp = await MVP.findOne({ tournament: tournamentId }).sort({
         kills: -1,
         damage: -1,
@@ -88,7 +84,6 @@ const getTournamentCalculations = async (req, res) => {
       });
 
       if (topMvp) {
-        // Try linking to user account if match found by name
         const mvpUser = await User.findOne({
           $or: [{ inGameName: topMvp.playerName }, { displayName: topMvp.playerName }],
         });
@@ -146,7 +141,6 @@ const distributePrizes = async (req, res) => {
     const thirdPrize = Math.floor(prizePool * 0.1);
     const mvpPrize = Math.floor(prizePool * 0.05);
 
-    // Fetch top 3 teams
     const standings = await PointsTable.find({ tournament: tournamentId })
       .populate("team")
       .sort({ totalPoints: -1, chickenDinners: -1 });
@@ -159,7 +153,6 @@ const distributePrizes = async (req, res) => {
 
     const distributionLog = [];
 
-    // Credit 1st, 2nd, 3rd team captains
     for (const alloc of prizeAllocations) {
       if (alloc.teamEntry && alloc.teamEntry.team && alloc.teamEntry.team.registeredBy && alloc.amount > 0) {
         const userId = alloc.teamEntry.team.registeredBy;
@@ -188,7 +181,6 @@ const distributePrizes = async (req, res) => {
       }
     }
 
-    // Credit MVP player if user match exists
     const topMvp = await MVP.findOne({ tournament: tournamentId }).sort({
       kills: -1,
       damage: -1,
@@ -221,7 +213,6 @@ const distributePrizes = async (req, res) => {
       }
     }
 
-    // Mark tournament as completed
     tournament.status = "completed";
     await tournament.save();
 
