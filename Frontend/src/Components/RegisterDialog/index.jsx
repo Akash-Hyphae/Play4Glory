@@ -19,6 +19,7 @@ const RegisterDialog = ({
   tournamentId,
 }) => {
   const [teamName, setTeamName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const [players, setPlayers] = useState(
     Array.from({ length: 5 }, () => ({
@@ -28,72 +29,88 @@ const RegisterDialog = ({
     }))
   );
 
-  const handlePlayerChange = (
-    index,
-    field,
-    value
-  ) => {
+  const handlePlayerChange = (index, field, value) => {
     const updatedPlayers = [...players];
-
     updatedPlayers[index] = {
       ...updatedPlayers[index],
       [field]: value,
     };
-
     setPlayers(updatedPlayers);
   };
 
+  const resetForm = () => {
+    setTeamName("");
+    setPlayers(
+      Array.from({ length: 5 }, () => ({
+        name: "",
+        ign: "",
+        gameId: "",
+      }))
+    );
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
   const handleSubmit = async () => {
+    // 1. Guard against missing or undefined tournamentId
+    if (!tournamentId || tournamentId === "undefined") {
+      alert("Error: Tournament ID is missing or invalid. Please refresh the page and try again.");
+      return;
+    }
+
+    // 2. Validate Team Name
+    if (!teamName.trim()) {
+      alert("Please enter a Team Name");
+      return;
+    }
+
+    // 3. Validate at least Player 1
+    if (!players[0].name.trim() || !players[0].ign.trim() || !players[0].gameId.trim()) {
+      alert("Please enter Player 1 details (Name, IGN, Game ID)");
+      return;
+    }
+
     try {
+      setSubmitting(true);
+
       const payload = {
-        teamName,
+        teamName: teamName.trim(),
         teamLogo: "",
-        players,
+        players: players.filter((p) => p.name.trim() !== "" || p.ign.trim() !== ""),
       };
 
-      const res = await api.post(
-        `/registrations/${tournamentId}`,
-        payload
-      );
+      const res = await api.post(`/registrations/${tournamentId}`, payload);
 
-      alert(res.data.message);
-
-      setTeamName("");
-
-      setPlayers(
-        Array.from({ length: 5 }, () => ({
-          name: "",
-          ign: "",
-          gameId: "",
-        }))
-      );
-
-      onClose();
+      alert(res.data.message || "Team Registered Successfully!");
+      handleClose();
+      window.location.reload();
     } catch (error) {
-      console.log(error);
-
+      console.error(error);
       alert(
         error.response?.data?.message ||
-          "Registration Failed"
+          "Registration Failed. Please check your wallet balance or credentials."
       );
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       maxWidth="md"
       fullWidth
       PaperProps={{
         style: {
-          background:
-            "linear-gradient(180deg, #0B0F1A 0%, #10131F 100%)",
+          background: "linear-gradient(180deg, #0B0F1A 0%, #10131F 100%)",
           borderRadius: "20px",
           border: "1px solid #06B6D4",
           color: "white",
-          boxShadow:
-            "0 0 30px rgba(6,182,212,0.3)",
+          boxShadow: "0 0 30px rgba(6,182,212,0.3)",
         },
       }}
     >
@@ -107,16 +124,12 @@ const RegisterDialog = ({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          borderBottom:
-            "1px solid rgba(255,255,255,0.1)",
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
         }}
       >
-        Register for {tournamentTitle}
+        <span>Register for {tournamentTitle || "Tournament"}</span>
 
-        <IconButton
-          onClick={onClose}
-          sx={{ color: "#06B6D4" }}
-        >
+        <IconButton onClick={handleClose} sx={{ color: "#06B6D4" }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -138,9 +151,7 @@ const RegisterDialog = ({
             label="Team Name"
             fullWidth
             value={teamName}
-            onChange={(e) =>
-              setTeamName(e.target.value)
-            }
+            onChange={(e) => setTeamName(e.target.value)}
             variant="outlined"
             InputLabelProps={{
               style: { color: "#aaa" },
@@ -166,24 +177,13 @@ const RegisterDialog = ({
           >
             {[1, 2, 3, 4, 5].map((num) => (
               <React.Fragment key={num}>
-                <Grid
-                  item
-                  xs={12}
-                  sm={4}
-                  sx={{ flexGrow: 1 }}
-                >
+                <Grid item xs={12} sm={4} sx={{ flexGrow: 1 }}>
                   <TextField
-                    label={`Player ${num} Name`}
+                    label={`Player ${num} Name ${num === 5 ? "(Sub)" : ""}`}
                     fullWidth
-                    value={
-                      players[num - 1].name
-                    }
+                    value={players[num - 1].name}
                     onChange={(e) =>
-                      handlePlayerChange(
-                        num - 1,
-                        "name",
-                        e.target.value
-                      )
+                      handlePlayerChange(num - 1, "name", e.target.value)
                     }
                     variant="outlined"
                     InputLabelProps={{
@@ -199,24 +199,13 @@ const RegisterDialog = ({
                   />
                 </Grid>
 
-                <Grid
-                  item
-                  xs={12}
-                  sm={4}
-                  sx={{ flexGrow: 1 }}
-                >
+                <Grid item xs={12} sm={4} sx={{ flexGrow: 1 }}>
                   <TextField
                     label={`Player ${num} IGN`}
                     fullWidth
-                    value={
-                      players[num - 1].ign
-                    }
+                    value={players[num - 1].ign}
                     onChange={(e) =>
-                      handlePlayerChange(
-                        num - 1,
-                        "ign",
-                        e.target.value
-                      )
+                      handlePlayerChange(num - 1, "ign", e.target.value)
                     }
                     variant="outlined"
                     InputLabelProps={{
@@ -232,25 +221,14 @@ const RegisterDialog = ({
                   />
                 </Grid>
 
-                <Grid
-                  item
-                  xs={12}
-                  sm={4}
-                  sx={{ flexGrow: 1 }}
-                >
+                <Grid item xs={12} sm={4} sx={{ flexGrow: 1 }}>
                   <TextField
-                    label={`Player ${num} ID`}
+                    label={`Player ${num} Game ID`}
                     type="number"
                     fullWidth
-                    value={
-                      players[num - 1].gameId
-                    }
+                    value={players[num - 1].gameId}
                     onChange={(e) =>
-                      handlePlayerChange(
-                        num - 1,
-                        "gameId",
-                        e.target.value
-                      )
+                      handlePlayerChange(num - 1, "gameId", e.target.value)
                     }
                     variant="outlined"
                     InputLabelProps={{
@@ -263,13 +241,11 @@ const RegisterDialog = ({
                         borderRadius: "10px",
                       },
                       sx: {
-                        "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
-                          {
-                            display: "none",
-                          },
+                        "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button": {
+                          display: "none",
+                        },
                         "& input[type=number]": {
-                          MozAppearance:
-                            "textfield",
+                          MozAppearance: "textfield",
                         },
                       },
                     }}
@@ -283,13 +259,11 @@ const RegisterDialog = ({
           <Box
             sx={{
               display: "flex",
-              justifyContent:
-                "space-between",
+              justifyContent: "space-between",
               alignItems: "center",
               mt: 1,
               pt: 2,
-              borderTop:
-                "1px solid rgba(255,255,255,0.1)",
+              borderTop: "1px solid rgba(255,255,255,0.1)",
             }}
           >
             <Button
@@ -307,15 +281,16 @@ const RegisterDialog = ({
               }}
             >
               Upload Team Logo
-              <input type="file" hidden />
+              <input type="file" hidden accept="image/*" />
             </Button>
 
             <Button
               variant="contained"
               onClick={handleSubmit}
+              disabled={submitting}
               sx={{
                 background: "#06B6D4",
-                color: "white",
+                color: "black",
                 fontWeight: "bold",
                 fontFamily: "Orbitron",
                 px: 4,
@@ -324,9 +299,13 @@ const RegisterDialog = ({
                 "&:hover": {
                   background: "#0891b2",
                 },
+                "&:disabled": {
+                  opacity: 0.5,
+                  color: "#555",
+                },
               }}
             >
-              Submit
+              {submitting ? "Registering..." : "Submit"}
             </Button>
           </Box>
         </Box>
