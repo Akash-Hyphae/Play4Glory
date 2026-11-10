@@ -5,7 +5,6 @@ const User = require("../models/user");
 const WalletTransaction = require("../models/walletTransaction");
 const TDMMatch = require("../models/TDMMatch");
 
-// Calculate prize pool and preview winners
 const getTournamentCalculations = async (req, res) => {
   try {
     const { tournamentId } = req.params;
@@ -30,14 +29,22 @@ const getTournamentCalculations = async (req, res) => {
       fourthPrize = Math.floor(prizePool * 0.1);
       mvpPrize = 0;
 
-      // Find final match dynamically (the match that does not have a nextMatch)
       const finalMatch = await TDMMatch.findOne({
         tournament: tournamentId,
         nextMatch: null,
       })
-        .populate("winner")
-        .populate("teamA")
-        .populate("teamB");
+        .populate({
+          path: "winner",
+          populate: { path: "registeredBy", select: "displayName email inGameName inGameId walletBalance" },
+        })
+        .populate({
+          path: "teamA",
+          populate: { path: "registeredBy", select: "displayName email inGameName inGameId walletBalance" },
+        })
+        .populate({
+          path: "teamB",
+          populate: { path: "registeredBy", select: "displayName email inGameName inGameId walletBalance" },
+        });
 
       if (finalMatch && finalMatch.winner) {
         winners.first = finalMatch.winner;
@@ -117,7 +124,6 @@ const getTournamentCalculations = async (req, res) => {
   }
 };
 
-// Credit wallets and complete tournament
 const distributePrizes = async (req, res) => {
   try {
     const { tournamentId } = req.params;
@@ -136,80 +142,138 @@ const distributePrizes = async (req, res) => {
     const platformAmount = (totalCollection * (tournament.platformFeePercent || 10)) / 100;
     const prizePool = Math.max(0, totalCollection - hostAmount - platformAmount);
 
-    const firstPrize = Math.floor(prizePool * 0.6);
-    const secondPrize = Math.floor(prizePool * 0.25);
-    const thirdPrize = Math.floor(prizePool * 0.1);
-    const mvpPrize = Math.floor(prizePool * 0.05);
-
-    const standings = await PointsTable.find({ tournament: tournamentId })
-      .populate("team")
-      .sort({ totalPoints: -1, chickenDinners: -1 });
-
-    const prizeAllocations = [
-      { teamEntry: standings[0], amount: firstPrize, place: "1st Place" },
-      { teamEntry: standings[1], amount: secondPrize, place: "2nd Place" },
-      { teamEntry: standings[2], amount: thirdPrize, place: "3rd Place" },
-    ];
-
     const distributionLog = [];
 
-    for (const alloc of prizeAllocations) {
-      if (alloc.teamEntry && alloc.teamEntry.team && alloc.teamEntry.team.registeredBy && alloc.amount > 0) {
-        const userId = alloc.teamEntry.team.registeredBy;
-        const user = await User.findById(userId);
+    if (tournament.eventType === "tdm") {
+      const firstPrize = Math.floor(prizePool * 0.4);
+      const secondPrize = Math.floor(prizePool * 0.3);
 
-        if (user) {
-          user.walletBalance += alloc.amount;
-          user.totalWinnings += alloc.amount;
-          await user.save();
+      const finalMatch = await TDMMatch.findOne({
+        tournament: tournamentId,
+        nextMatch: null,
+      }).populate({
+        path: "winner teamA teamB",
+        populate: { path: "registeredBy" },
+      });
+
+      if (!finalMatch || !finalMatch.winner) {
+        return res.status(400).json({
+          message: "Knockout final match winner has not been declared yet.",
+        });
+      }
+
+      const winnerTeam = finalMatch.winner;
+      const runnerUpTeam =
+        finalMatch.teamA?._id?.toString() === winnerTeam._id.toString()
+          ? finalMatch.teamB
+          : finalMatch.teamA;
+
+      const tdmAllocations = [
+        { team: winnerTeam, amount: firstPrize, place: "1st Place" },
+        { team: runnerUpTeam, amount: secondPrize, place: "2nd Place" },
+      ];
+
+      for (const alloc of tdmAllocations) {
+        if (alloc.team?.registeredBy && alloc.amount > 0) {
+          const captain = await User.findById(alloc.team.registeredBy);
+          if (captain) {
+            captain.walletBalance += alloc.amount;
+            captain.totalWinnings += alloc.amount;
+            await captain.save();
+
+            await WalletTransaction.create({
+              user: captain._id,
+              amount: alloc.amount,
+              type: "winnings",
+              status: "completed",
+              description: `Prize winnings for ${alloc.place} in ${tournament.title}`,
+            });
+
+            distributionLog.push({
+              user: captain.displayName,
+              team: alloc.team.teamName,
+              place: alloc.place,
+              amount: alloc.amount,
+            });
+          }
+        }
+      }
+    } else {
+      const firstPrize = Math.floor(prizePool * 0.6);
+      const secondPrize = Math.floor(prizePool * 0.25);
+      const thirdPrize = Math.floor(prizePool * 0.1);
+      const mvpPrize = Math.floor(prizePool * 0.05);
+
+      const standings = await PointsTable.find({ tournament: tournamentId })
+        .populate({
+          path: "team",
+          populate: { path: "registeredBy" },
+        })
+        .sort({ totalPoints: -1, chickenDinners: -1 });
+
+      const prizeAllocations = [
+        { teamEntry: standings[0], amount: firstPrize, place: "1st Place" },
+        { teamEntry: standings[1], amount: secondPrize, place: "2nd Place" },
+        { teamEntry: standings[2], amount: thirdPrize, place: "3rd Place" },
+      ];
+
+      for (const alloc of prizeAllocations) {
+        if (alloc.teamEntry?.team?.registeredBy && alloc.amount > 0) {
+          const user = await User.findById(alloc.teamEntry.team.registeredBy);
+
+          if (user) {
+            user.walletBalance += alloc.amount;
+            user.totalWinnings += alloc.amount;
+            await user.save();
+
+            await WalletTransaction.create({
+              user: user._id,
+              amount: alloc.amount,
+              type: "winnings",
+              status: "completed",
+              description: `Prize winnings for ${alloc.place} in ${tournament.title}`,
+            });
+
+            distributionLog.push({
+              user: user.displayName,
+              team: alloc.teamEntry.team.teamName,
+              place: alloc.place,
+              amount: alloc.amount,
+            });
+          }
+        }
+      }
+
+      const topMvp = await MVP.findOne({ tournament: tournamentId }).sort({
+        kills: -1,
+        damage: -1,
+        survivalTime: -1,
+      });
+
+      if (topMvp && mvpPrize > 0) {
+        const mvpUser = await User.findOne({
+          $or: [{ inGameName: topMvp.playerName }, { displayName: topMvp.playerName }],
+        });
+
+        if (mvpUser) {
+          mvpUser.walletBalance += mvpPrize;
+          mvpUser.totalWinnings += mvpPrize;
+          await mvpUser.save();
 
           await WalletTransaction.create({
-            user: user._id,
-            amount: alloc.amount,
+            user: mvpUser._id,
+            amount: mvpPrize,
             type: "winnings",
             status: "completed",
-            description: `Prize winnings for ${alloc.place} in ${tournament.title}`,
+            description: `MVP Award Winner in ${tournament.title}`,
           });
 
           distributionLog.push({
-            user: user.displayName,
-            team: alloc.teamEntry.team.teamName,
-            place: alloc.place,
-            amount: alloc.amount,
+            user: mvpUser.displayName,
+            place: "MVP Award",
+            amount: mvpPrize,
           });
         }
-      }
-    }
-
-    const topMvp = await MVP.findOne({ tournament: tournamentId }).sort({
-      kills: -1,
-      damage: -1,
-      survivalTime: -1,
-    });
-
-    if (topMvp && mvpPrize > 0) {
-      const mvpUser = await User.findOne({
-        $or: [{ inGameName: topMvp.playerName }, { displayName: topMvp.playerName }],
-      });
-
-      if (mvpUser) {
-        mvpUser.walletBalance += mvpPrize;
-        mvpUser.totalWinnings += mvpPrize;
-        await mvpUser.save();
-
-        await WalletTransaction.create({
-          user: mvpUser._id,
-          amount: mvpPrize,
-          type: "winnings",
-          status: "completed",
-          description: `MVP Award Winner in ${tournament.title}`,
-        });
-
-        distributionLog.push({
-          user: mvpUser.displayName,
-          place: "MVP Award",
-          amount: mvpPrize,
-        });
       }
     }
 
