@@ -1,5 +1,26 @@
 const mongoose = require("mongoose");
 
+const playerSubSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    ign: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    gameId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  },
+  { _id: false }
+);
+
 const teamRegistrationSchema = new mongoose.Schema(
   {
     tournament: {
@@ -24,10 +45,15 @@ const teamRegistrationSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    players: {
+      type: [playerSubSchema],
+      default: [],
+    },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 module.exports = mongoose.model(

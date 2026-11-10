@@ -11,6 +11,7 @@ import Create from "./Pages/Create";
 import Leaderboard from "./Pages/Leaderboard";
 import Login from "./Pages/Login/index";
 import TDMBracket from "./Pages/TDMBracket/index";
+import AdminTournamentDetail from "./Pages/TournamentDetail/index";
 
 const ProtectedAdminRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -38,6 +39,14 @@ function App() {
           element={
             <ProtectedAdminRoute>
               <Create />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/tournament-details/:tournamentId"
+          element={
+            <ProtectedAdminRoute>
+              <AdminTournamentDetail />
             </ProtectedAdminRoute>
           }
         />

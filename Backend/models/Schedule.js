@@ -11,16 +11,25 @@ const scheduleSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
+      trim: true,
     },
 
     round: {
       type: String,
-      required: true,
+      default: "Round 1",
+      trim: true,
+    },
+
+    group: {
+      type: String,
+      default: "Group A",
+      trim: true,
     },
 
     mapName: {
       type: String,
       default: "Erangel",
+      trim: true,
     },
 
     startTime: {
@@ -36,11 +45,7 @@ const scheduleSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: [
-        "upcoming",
-        "live",
-        "completed",
-      ],
+      enum: ["upcoming", "live", "completed"],
       default: "upcoming",
     },
   },
@@ -49,7 +54,4 @@ const scheduleSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model(
-  "Schedule",
-  scheduleSchema
-);
+module.exports = mongoose.model("Schedule", scheduleSchema);

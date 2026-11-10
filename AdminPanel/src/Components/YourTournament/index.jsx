@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../../Api/axios";
 import { useNavigate } from "react-router-dom";
-import { FaTimes, FaTrashAlt } from "react-icons/fa";
+import { FaTimes, FaTrashAlt, FaInfoCircle } from "react-icons/fa";
 
 const YourTournament = () => {
   const navigate = useNavigate();
@@ -68,7 +68,6 @@ const YourTournament = () => {
     }
   };
 
-  // DELETE TOURNAMENT WITH CASCADE CLEANUP
   const handleDeleteTournament = async (id, title) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${title}"?\n\nWarning: This will permanently delete this tournament, remove all registered teams, and delete it from all player profiles!`
@@ -89,20 +88,18 @@ const YourTournament = () => {
   const filteredTournaments = tournaments.filter(
     (t) =>
       (filter === "all" || t.tournamentType?.toLowerCase() === filter) &&
-      t.title.toLowerCase().includes(search.toLowerCase()),
+      t.title.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <>
       <div className="min-h-screen bg-[#0b0e16] text-white px-6 py-10 font-Poppins">
-        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-10">
           <h1 className="text-4xl font-extrabold text-cyan-400 tracking-wide mb-4 md:mb-0">
             Your Tournament
           </h1>
         </div>
 
-        {/* Search + Filter */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <input
             type="text"
@@ -123,7 +120,6 @@ const YourTournament = () => {
           </select>
         </div>
 
-        {/* Tournament Cards */}
         <div className="space-y-8">
           {filteredTournaments.map((t) => (
             <div
@@ -142,7 +138,7 @@ const YourTournament = () => {
                   )}
                 </div>
 
-                {/* DELETE ICON BUTTON */}
+                {/* TOP RIGHT DELETE BUTTON KEPT INTACT */}
                 <button
                   onClick={() => handleDeleteTournament(t._id, t.title)}
                   title="Delete Tournament"
@@ -180,7 +176,7 @@ const YourTournament = () => {
                 {t.filledSlots}/{t.maxSlots}
               </div>
 
-              {/* Action Buttons */}
+              {/* ACTION BUTTONS */}
               <div className="flex flex-wrap gap-4 mt-4">
                 <button
                   onClick={() => handleOpenPopup(t)}
@@ -212,38 +208,29 @@ const YourTournament = () => {
                   </button>
                 )}
 
+                {/* DETAILS BUTTON (REPLACED BOTTOM DELETE) */}
                 <button
-                  onClick={() => handleDeleteTournament(t._id, t.title)}
-                  className="py-2 px-5 border border-red-500/70 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={() => navigate(`/tournament-details/${t._id}`)}
+                  className="flex-1 min-w-[140px] py-2 border border-cyan-400 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500 hover:text-black rounded-lg transition font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.2)]"
                 >
-                  <FaTrashAlt size={14} /> Delete
+                  <FaInfoCircle size={15} /> Details
                 </button>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Sticky Create Tournament Button */}
+        {/* Floating Create Tournament */}
         <div className="fixed bottom-6 right-6 z-50">
           <button
             onClick={() => navigate("/create")}
-            className="
-              px-6 py-3 
-              bg-gradient-to-r from-cyan-500 to-blue-500 
-              text-black font-semibold rounded-xl 
-              shadow-[0_0_15px_#06b6d4aa] 
-              transition-all duration-300 
-              hover:scale-105 
-              hover:shadow-[0_0_30px_#06b6d4ff]
-              hover:from-cyan-400 hover:to-blue-400
-              cursor-pointer
-            "
+            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-black font-semibold rounded-xl shadow-[0_0_15px_#06b6d4aa] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_#06b6d4ff] hover:from-cyan-400 hover:to-blue-400 cursor-pointer"
           >
             + Create Tournament
           </button>
         </div>
 
-        {/* POPUP MODAL */}
+        {/* POPUP MODAL FOR STREAM LINK */}
         {showPopup && (
           <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 px-4">
             <div className="w-full max-w-lg bg-[#10131f] border border-cyan-600 rounded-2xl p-6 relative shadow-[0_0_25px_#00ffff44]">
@@ -289,9 +276,6 @@ const YourTournament = () => {
                   onChange={(e) => setThumbnailUrl(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg bg-[#1a2033] border border-cyan-700 text-white outline-none focus:ring-2 focus:ring-cyan-400 text-sm"
                 />
-                <p className="text-xs text-gray-400 mt-1">
-                  If left empty, the tournament's banner image or YouTube thumbnail will be used automatically.
-                </p>
               </div>
 
               <button
